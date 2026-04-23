@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-Sec OR Strategy Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Monaco", "Menlo", monospace;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px;
+        }
+        .container { max-width: 2000px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #45475a;
+            padding-bottom: 20px;
+        }
+        h1 { font-size: 2.5em; color: #a6e3a1; margin-bottom: 10px; }
+        .updated-time { font-size: 0.85em; color: #6c7086; }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #313244;
+            border-radius: 8px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-size: 0.75em;
+            color: #89b4fa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        select, button {
+            padding: 8px 12px;
+            background: #313244;
+            color: #cdd6f4;
+            border: 1px solid #45475a;
+            border-radius: 4px;
+            font-family: inherit;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        
+        select:hover, button:hover {
+            background: #45475a;
+            border-color: #a6e3a1;
+        }
+        
+        button.active {
+            background: #a6e3a1;
+            color: #1e1e2e;
+            border-color: #a6e3a1;
+        }
+        
+        .instrument-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .instrument-buttons button {
+            flex: 1;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #45475a;
+            overflow-x: auto;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            background: #313244;
+            color: #cdd6f4;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab-btn:hover {
+            background: #45475a;
+        }
+        
+        .tab-btn.active {
+            background: #45475a;
+            color: #a6e3a1;
+            border-bottom-color: #a6e3a1;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .key-takeaways {
+            background: #313244;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #a6e3a1;
+            margin-bottom: 30px;
+        }
+        
+        .key-takeaways h3 {
+            color: #a6e3a1;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-size: 0.95em;
+            letter-spacing: 1px;
+        }
+        
+        .key-takeaways ul {
+            list-style: none;
+            color: #cdd6f4;
+            line-height: 1.8;
+        }
+        
+        .key-takeaways li {
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        
+        .key-takeaways li:before {
+            content: "▸ ";
+            color: #a6e3a1;
+            margin-right: 8px;
+        }
+        
+        .chart-container {
+            background: #313244;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #45475a;
+        }
+        
+        .chart-title {
+            font-size: 1.1em;
+            color: #a6e3a1;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-row.full {
+            grid-template-columns: 1fr;
+        }
+        
+        .chart-subtitle {
+            font-size: 0.95em;
+            color: #89b4fa;
+            margin-bottom: 10px;
+        }
+        
+        .sample-size-summary {
+            background: linear-gradient(135deg, #313244 0%, #45475a 100%);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #45475a;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 0.8em;
+            color: #89b4fa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .summary-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #a6e3a1;
+            margin-bottom: 5px;
+        }
+        
+        .summary-detail {
+            font-size: 0.85em;
+            color: #cdd6f4;
+            line-height: 1.6;
+        }
+        
+        .error {
+            background: #45475a;
+            color: #f38ba8;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 30-Sec OR Strategy Dashboard</h1>
+            <p>Ladder Analysis — Master Data 2023-2026</p>
+            <p class="updated-time" id="updated"></p>
+        </header>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Instrument</label>
+                <div class="instrument-buttons">
+                    <button id="btn-nq" class="active" onclick="switchInstrument('NQ/MNQ')">NQ/MNQ</button>
+                    <button id="btn-es" onclick="switchInstrument('ES/MES')">ES/MES</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Trade Type</label>
+                <select id="tradeTypeSelect" onchange="onTradeTypeChange()">
+                    <option value="total">Total Trades</option>
+                    <option value="primary">Directional Only</option>
+                    <option value="reversals">Reversals Only</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Year</label>
+                <select id="yearSelect" onchange="onYearChange()">
+                    <option value="all">All Data</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Quarter</label>
+                <select id="quarterSelect" onchange="onQuarterChange()">
+                    <option value="all">All Quarters</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Month</label>
+                <select id="monthSelect" onchange="onMonthChange()">
+                    <option value="all">All Months</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Week</label>
+                <select id="weekSelect" onchange="onWeekChange()">
+                    <option value="all">All Weeks</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="sample-size-summary" id="sampleSizeSummary"></div>
+        
+        <div class="tabs" id="tabsContainer"></div>
+        
+        <!-- LADDER OVERVIEW TAB -->
+        <div id="ladder-overview" class="tab-content active">
+            <div class="key-takeaways" id="keyTakeaways"></div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Entry Volume by Ladder</div>
+                <div class="chart-row">
+                    <div>
+                        <div class="chart-subtitle">Trade Count — Longs (ORH → UL10)</div>
+                        <div id="volumeLongs" style="height: 400px;"></div>
+                    </div>
+                    <div>
+                        <div class="chart-subtitle">Trade Count — Shorts (ORL → DL10)</div>
+                        <div id="volumeShorts" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Win Rate by Ladder</div>
+                <div class="chart-row">
+                    <div>
+                        <div class="chart-subtitle">Win % — Longs (ORH → UL10)</div>
+                        <div id="winRateLongs" style="height: 400px;"></div>
+                    </div>
+                    <div>
+                        <div class="chart-subtitle">Win % — Shorts (ORL → DL10)</div>
+                        <div id="winRateShorts" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Win % by Setup Type — Broken Down Per Ladder</div>
+                <div class="chart-row">
+                    <div>
+                        <div class="chart-subtitle">Win % by Setup Type — Up Ladders (ORH → UL10)</div>
+                        <div id="setupTypeUpLadders" style="height: 450px;"></div>
+                    </div>
+                    <div>
+                        <div class="chart-subtitle">Win % by Setup Type — Down Ladders (ORL → DL10)</div>
+                        <div id="setupTypeDownLadders" style="height: 450px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">P&L Analysis by Setup Type & Entry Ladder</div>
+                <div class="chart-row">
+                    <div>
+                        <div class="chart-subtitle">P&L by Setup Type — Up Ladders (ORH → UL10)</div>
+                        <div id="setupTypeUpLaddersP&L" style="height: 450px;"></div>
+                    </div>
+                    <div>
+                        <div class="chart-subtitle">P&L by Setup Type — Down Ladders (ORL → DL10)</div>
+                        <div id="setupTypeDownLaddersP&L" style="height: 450px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- P&L TAB -->
+        <div id="pnl" class="tab-content">
+            <!-- P&L TAB: FIRST SECTION - P&L BY SETUP TYPE -->
+            <div class="section-header">💰 P&L ANALYSIS BY SETUP TYPE & ENTRY LADDER</div>
+            
+            <!-- Key Takeaways -->
+            <div id="pnlKeyTakeaways" style="margin: 30px 0; padding: 15px; background: #313244; border-radius: 8px; border-left: 3px solid #a6e3a1;"></div>
+            
+            <!-- P&L by Setup Type Charts -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 30px 0;">
+                <div>
+                    <div class="chart-subtitle">P&L by Setup Type — Up Ladders (ORH → UL10)</div>
+                    <div id="pnlSetupTypeUpLadders" style="height: 450px;"></div>
+                </div>
+                <div>
+                    <div class="chart-subtitle">P&L by Setup Type — Down Ladders (ORL → DL10)</div>
+                    <div id="pnlSetupTypeDownLadders" style="height: 450px;"></div>
+                </div>
+            </div>
+            
+            <!-- P&L TAB: SECOND SECTION - HIERARCHICAL BREAKDOWN -->
+            <div class="section-header" style="margin-top: 50px;">📊 HIERARCHICAL P&L BREAKDOWN</div>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px 0;">
+                <div>
+                    <div class="chart-subtitle" id="hierarchyChartTitle">Monthly Net P&L</div>
+                    <div id="pnlHierarchicalChart" style="height: 450px;"></div>
+                </div>
+            </div>
+            
+            <!-- P&L TAB: THIRD SECTION - AVG WIN VS AVG LOSS PER LADDER -->
+            <div class="section-header" style="margin-top: 50px;">📈 AVG WIN VS AVG LOSS PER LADDER PER TRADE</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 30px 0;">
+                <div>
+                    <div class="chart-subtitle">Avg Win $ vs |Avg Loss $| — Longs</div>
+                    <div id="avgWinLossUpLadders" style="height: 450px;"></div>
+                </div>
+                <div>
+                    <div class="chart-subtitle">Avg Win $ vs |Avg Loss $| — Shorts</div>
+                    <div id="avgWinLossDownLadders" style="height: 450px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TIME & DAY PATTERNS TAB -->
+        <div id="time-patterns" class="tab-content">
+            <div class="error">Time & Day Patterns Tab — Coming Soon</div>
+        </div>
+        
+        <!-- RISK & REWARD TAB -->
+        <div id="risk-reward" class="tab-content">
+            <div class="error">Risk & Reward Tab — Coming Soon</div>
+        </div>
+        
+        <!-- TRADE ANALYSIS TAB -->
+        <div id="trade-analysis" class="tab-content">
+            <div class="error">Trade Analysis Tab — Coming Soon</div>
+        </div>
+    </div>
+    
+    <script>
+        const TABS = [
+            { id: 'ladder-overview', name: 'Ladder Overview' },
+            { id: 'pnl', name: 'P&L' },
+            { id: 'time-patterns', name: 'Time & Day Patterns' },
+            { id: 'risk-reward', name: 'Risk & Reward' },
+            { id: 'trade-analysis', name: 'Trade Analysis' }
+        ];
+        
+        const MONTH_NAMES = {
+            '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
+            '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Aug',
+            '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+        };
+        
+        let dashboardData = null;
+        let currentInstrument = 'NQ/MNQ';
+        let currentTradeFilter = 'total';  // 'total', 'primary', or 'reversals'
+        
+        async function loadData() {
+            try {
+                const response = await fetch('dashboard_data.json');
+                dashboardData = await response.json();
+                
+                document.getElementById('updated').textContent = 
+                    `Last updated: ${new Date(dashboardData.updated).toLocaleString()}`;
+                
+                initializeTabs();
+                populateYears();
+                populateQuarters();
+                populateMonths();
+                populateWeeks();
+                updateDisplay();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.body.innerHTML += `<div class="error">Error loading dashboard_data.json</div>`;
+            }
+        }
+        
+        function initializeTabs() {
+            const container = document.getElementById('tabsContainer');
+            TABS.forEach((tab, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn' + (idx === 0 ? ' active' : '');
+                btn.textContent = tab.name;
+                btn.onclick = () => switchTab(tab.id);
+                container.appendChild(btn);
+            });
+        }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Call specific rendering function if needed
+            if (tabId === 'pnl') {
+                updatePnLTab();
+            }
+        }
+        
+        function switchInstrument(instrument) {
+            currentInstrument = instrument;
+            document.getElementById('btn-nq').classList.toggle('active');
+            document.getElementById('btn-es').classList.toggle('active');
+            
+            // Reset filters when switching instruments
+            document.getElementById('yearSelect').value = 'all';
+            document.getElementById('quarterSelect').value = 'all';
+            document.getElementById('monthSelect').value = 'all';
+            document.getElementById('weekSelect').value = 'all';
+            
+            populateYears();
+            populateQuarters();
+            populateMonths();
+            populateWeeks();
+            updateDisplay();
+        }
+        
+        function populateYears() {
+            const data = dashboardData.instruments[currentInstrument];
+            const years = Object.keys(data.by_period).sort();
+            const yearSelect = document.getElementById('yearSelect');
+            yearSelect.innerHTML = '<option value="all">All Data</option>';
+            years.forEach(year => {
+                const opt = document.createElement('option');
+                opt.value = year;
+                opt.textContent = year;
+                yearSelect.appendChild(opt);
+            });
+        }
+        
+        function updateDisplay() {
+            const yearVal = document.getElementById('yearSelect').value;
+            const quarterVal = document.getElementById('quarterSelect').value;
+            const monthVal = document.getElementById('monthSelect').value;
+            const weekVal = document.getElementById('weekSelect').value;
+            
+            let periodSummary = null;
+            let periodLabel = 'All Data (2023-2026)';
+            let ladderData = null;
+            let setupData = dashboardData.instruments[currentInstrument].setup_type_by_entry_ladder;
+            
+            try {
+                const instrumentData = dashboardData.instruments[currentInstrument];
+                
+                // Determine which ladder analysis key to use based on trade type filter
+                let ladderKey = 'ladder_analysis';
+                let setupKey = 'setup_type_by_entry_ladder';
+                
+                if (currentTradeFilter === 'primary') {
+                    ladderKey = 'ladder_analysis_directional';
+                } else if (currentTradeFilter === 'reversals') {
+                    ladderKey = 'ladder_analysis_reversals';
+                }
+                
+                // Week level (if selected)
+                if (weekVal !== 'all') {
+                    if (monthVal !== 'all' && yearVal !== 'all' && quarterVal !== 'all') {
+                        const weekData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal].weeks[weekVal];
+                        periodSummary = weekData;
+                        periodLabel = `${yearVal} ${quarterVal} ${monthVal} ${weekVal}`;
+                        if (weekData[ladderKey]) ladderData = weekData[ladderKey];
+                        if (weekData[setupKey]) setupData = weekData[setupKey];
+                    } else if (monthVal !== 'all' && yearVal !== 'all') {
+                        // Month is selected but quarter is not - search all quarters for this month
+                        for (let q in instrumentData.by_period[yearVal].quarters) {
+                            if (monthVal in instrumentData.by_period[yearVal].quarters[q].months) {
+                                const weekData = instrumentData.by_period[yearVal].quarters[q].months[monthVal].weeks[weekVal];
+                                periodSummary = weekData;
+                                periodLabel = `${yearVal} ${q} ${monthVal} ${weekVal}`;
+                                if (weekData[ladderKey]) ladderData = weekData[ladderKey];
+                                if (weekData[setupKey]) setupData = weekData[setupKey];
+                                break;
+                            }
+                        }
+                    } else if (yearVal !== 'all' && monthVal === 'all') {
+                        // Week selected but month is 'all' - search all quarters/months for this week
+                        for (let q in instrumentData.by_period[yearVal].quarters) {
+                            for (let m in instrumentData.by_period[yearVal].quarters[q].months) {
+                                const monthData = instrumentData.by_period[yearVal].quarters[q].months[m];
+                                if (monthData.weeks && monthData.weeks[weekVal]) {
+                                    const weekData = monthData.weeks[weekVal];
+                                    periodSummary = weekData;
+                                    periodLabel = `${yearVal} ${q} ${m} ${weekVal}`;
+                                    if (weekData[ladderKey]) ladderData = weekData[ladderKey];
+                                    if (weekData[setupKey]) setupData = weekData[setupKey];
+                                    // Found it, break out of both loops
+                                    q = {};
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } 
+                // Month level (if selected)
+                else if (monthVal !== 'all') {
+                    if (yearVal !== 'all' && quarterVal !== 'all') {
+                        const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
+                        periodSummary = monthData.summary;
+                        periodLabel = `${yearVal} ${quarterVal} ${monthVal}`;
+                        if (monthData[ladderKey]) ladderData = monthData[ladderKey];
+                        if (monthData[setupKey]) setupData = monthData[setupKey];
+                    } else if (yearVal !== 'all') {
+                        // Month is selected but quarter is not - search all quarters for this month
+                        for (let q in instrumentData.by_period[yearVal].quarters) {
+                            if (monthVal in instrumentData.by_period[yearVal].quarters[q].months) {
+                                const monthData = instrumentData.by_period[yearVal].quarters[q].months[monthVal];
+                                periodSummary = monthData.summary;
+                                periodLabel = `${yearVal} ${q} ${monthVal}`;
+                                if (monthData[ladderKey]) ladderData = monthData[ladderKey];
+                                if (monthData[setupKey]) setupData = monthData[setupKey];
+                                break;
+                            }
+                        }
+                    } else {
+                        // Month selected without year - search all years for this month
+                        for (let y in instrumentData.by_period) {
+                            for (let q in instrumentData.by_period[y].quarters) {
+                                if (monthVal in instrumentData.by_period[y].quarters[q].months) {
+                                    const monthData = instrumentData.by_period[y].quarters[q].months[monthVal];
+                                    periodSummary = monthData.summary;
+                                    periodLabel = `${y} ${q} ${monthVal}`;
+                                    if (monthData[ladderKey]) ladderData = monthData[ladderKey];
+                                    if (monthData[setupKey]) setupData = monthData[setupKey];
+                                    break;
+                                }
+                            }
+                            if (periodSummary) break;
+                        }
+                    }
+                }
+                // Quarter level (if selected)
+                else if (quarterVal !== 'all') {
+                    if (yearVal !== 'all') {
+                        const quarterData = instrumentData.by_period[yearVal].quarters[quarterVal];
+                        periodSummary = quarterData.summary;
+                        periodLabel = `${yearVal} ${quarterVal}`;
+                        if (quarterData[ladderKey]) ladderData = quarterData[ladderKey];
+                        if (quarterData[setupKey]) setupData = quarterData[setupKey];
+                    } else {
+                        // Quarter selected without year - search all years for this quarter
+                        for (let y in instrumentData.by_period) {
+                            if (quarterVal in instrumentData.by_period[y].quarters) {
+                                const quarterData = instrumentData.by_period[y].quarters[quarterVal];
+                                periodSummary = quarterData.summary;
+                                periodLabel = `${y} ${quarterVal}`;
+                                if (quarterData[ladderKey]) ladderData = quarterData[ladderKey];
+                                if (quarterData[setupKey]) setupData = quarterData[setupKey];
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Year level (if selected)
+                else if (yearVal !== 'all') {
+                    const yearData = instrumentData.by_period[yearVal];
+                    periodSummary = yearData.summary;
+                    periodLabel = `${yearVal} Full Year`;
+                    if (yearData[ladderKey]) ladderData = yearData[ladderKey];
+                    if (yearData[setupKey]) setupData = yearData[setupKey];
+                }
+                
+                // If no period-specific data, use all-time data
+                if (!ladderData) {
+                    ladderData = instrumentData[ladderKey];
+                }
+                if (!setupData) {
+                    setupData = instrumentData[setupKey];
+                }
+            } catch (e) {
+                console.error('Error accessing period data:', e);
+                // Fall back to all-time data
+                const instrumentData = dashboardData.instruments[currentInstrument];
+                let ladderKey = 'ladder_analysis';
+                if (currentTradeFilter === 'primary') {
+                    ladderKey = 'ladder_analysis_directional';
+                } else if (currentTradeFilter === 'reversals') {
+                    ladderKey = 'ladder_analysis_reversals';
+                }
+                ladderData = instrumentData[ladderKey];
+            }
+            
+            // Display period summary and charts with period-specific setup data
+            displayPeriodSummary(periodSummary, periodLabel, ladderData);
+            displayLadderOverview(ladderData, periodLabel, setupData);
+            
+            // If P&L tab is currently visible, update it too
+            if (document.getElementById('pnl').classList.contains('active')) {
+                updatePnLTab();
+            }
+        }
+        
+        function displayPeriodSummary(summary, label, filteredLadderData) {
+            const container = document.getElementById('sampleSizeSummary');
+            
+            if (!summary) {
+                // Show all-time instrument summary
+                let longsTotal = 0, shortsTotal = 0;
+                let totalPnL = 0;
+                
+                // Calculate totals from the filtered ladder data
+                const ladders = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10',
+                                 'ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+                
+                ladders.forEach(ladder => {
+                    if (filteredLadderData[ladder]) {
+                        if (filteredLadderData[ladder].Long) {
+                            longsTotal += filteredLadderData[ladder].Long.trades;
+                            totalPnL += filteredLadderData[ladder].Long.pnl || 0;
+                        }
+                        if (filteredLadderData[ladder].Short) {
+                            shortsTotal += filteredLadderData[ladder].Short.trades;
+                            totalPnL += filteredLadderData[ladder].Short.pnl || 0;
+                        }
+                    }
+                });
+                
+                const totalTrades = longsTotal + shortsTotal;
+                const contractSize = currentInstrument === 'NQ/MNQ' ? 3 : 5;
+                const longsPct = totalTrades > 0 ? ((longsTotal / totalTrades * 100).toFixed(1)) : 0;
+                const shortsPct = totalTrades > 0 ? ((shortsTotal / totalTrades * 100).toFixed(1)) : 0;
+                
+                // Get breakdown info from trade_breakdown data
+                const breakdown = dashboardData.instruments[currentInstrument].trade_breakdown || {};
+                let filterNote = '';
+                if (currentTradeFilter === 'primary') {
+                    filterNote = `<div style="font-size: 0.75em; color: #89b4fa; margin-top: 5px;">📋 Directional trades only</div>`;
+                } else if (currentTradeFilter === 'reversals') {
+                    filterNote = `<div style="font-size: 0.75em; color: #89b4fa; margin-top: 5px;">📋 Reversal trades only</div>`;
+                } else if (breakdown.total_trades && breakdown.primary_direction) {
+                    const primary = breakdown.primary_direction.total || 0;
+                    const reversals = breakdown.reversals.total || 0;
+                    filterNote = `<div style="font-size: 0.75em; color: #89b4fa; margin-top: 5px;">📋 Total: ${breakdown.total_trades.toLocaleString()} (${primary.toLocaleString()} directional + ${reversals.toLocaleString()} reversals)</div>`;
+                }
+                
+                const html = `
+                    <div class="summary-item">
+                        <span class="summary-label">Total Trades</span>
+                        <div class="summary-value">${totalTrades.toLocaleString()}</div>
+                        <div class="summary-detail">2023 - 2026${filterNote}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Longs vs Shorts</span>
+                        <div class="summary-value">${longsTotal.toLocaleString()} | ${shortsTotal.toLocaleString()}</div>
+                        <div class="summary-detail">${longsPct}% Longs | ${shortsPct}% Shorts</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Net P&L</span>
+                        <div class="summary-value" style="color: ${totalPnL >= 0 ? '#a6e3a1' : '#f38ba8'}">$${totalPnL.toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
+                        <div class="summary-detail">${totalTrades > 0 ? (totalPnL / totalTrades).toFixed(2) : 0} per trade</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Contract Size</span>
+                        <div class="summary-value">${contractSize}</div>
+                        <div class="summary-detail">${currentInstrument === 'NQ/MNQ' ? 'Micro E-mini Nasdaq' : 'Micro E-mini S&P 500'}</div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            } else {
+                // Show period-specific summary
+                const trades = summary.trades || 0;
+                const wins = summary.wins || 0;
+                const losses = summary.losses || 0;
+                const winPct = summary.win_pct || 0;
+                const pnl = summary.pnl || 0;
+                const contractSize = currentInstrument === 'NQ/MNQ' ? 3 : 5;
+                
+                let filterNote = '';
+                if (currentTradeFilter === 'primary') {
+                    filterNote = `<div style="font-size: 0.75em; color: #89b4fa; margin-top: 5px;">📋 Directional trades only</div>`;
+                } else if (currentTradeFilter === 'reversals') {
+                    filterNote = `<div style="font-size: 0.75em; color: #89b4fa; margin-top: 5px;">📋 Reversal trades only</div>`;
+                }
+                
+                const html = `
+                    <div class="summary-item">
+                        <span class="summary-label">📅 ${label}</span>
+                        <div class="summary-value">${trades} trades</div>
+                        <div class="summary-detail">${wins} wins | ${losses} losses${filterNote}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Win Rate</span>
+                        <div class="summary-value">${winPct.toFixed(1)}%</div>
+                        <div class="summary-detail">${trades > 0 ? (pnl / trades).toFixed(2) : 0} per trade</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Net P&L</span>
+                        <div class="summary-value" style="color: ${pnl >= 0 ? '#a6e3a1' : '#f38ba8'}">$${pnl.toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
+                        <div class="summary-detail">${pnl >= 0 ? 'Profitable' : 'Loss'}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Contract Size</span>
+                        <div class="summary-value">${contractSize}</div>
+                        <div class="summary-detail">${currentInstrument === 'NQ/MNQ' ? 'MNQ' : 'MES'}</div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+        }
+        
+        function onYearChange() {
+            document.getElementById('quarterSelect').value = 'all';
+            document.getElementById('monthSelect').value = 'all';
+            document.getElementById('weekSelect').value = 'all';
+            populateQuarters();
+            populateMonths();
+            populateWeeks();
+            updateDisplay();
+        }
+        
+        function onQuarterChange() {
+            populateMonths();
+            populateWeeks();
+            updateDisplay();
+        }
+        
+        function onMonthChange() {
+            populateWeeks();
+            updateDisplay();
+        }
+        
+        function onWeekChange() {
+            updateDisplay();
+        }
+        
+        function onTradeTypeChange() {
+            currentTradeFilter = document.getElementById('tradeTypeSelect').value;
+            updateDisplay();
+        }
+        
+        function getFilteredLadderData(ladderData, setupData) {
+            // Simply return the appropriate pre-calculated ladder dataset
+            // No client-side filtering needed!
+            return ladderData;
+        }
+        
+        function getLadderDataByFilter(instrumentName) {
+            // Get the appropriate pre-calculated ladder dataset based on filter selection
+            const instrument = dashboardData.instruments[instrumentName];
+            
+            if (currentTradeFilter === 'primary') {
+                return instrument.ladder_analysis_directional || instrument.ladder_analysis;
+            } else if (currentTradeFilter === 'reversals') {
+                return instrument.ladder_analysis_reversals || instrument.ladder_analysis;
+            } else {
+                // total (default)
+                return instrument.ladder_analysis;
+            }
+        }
+        
+        function populateQuarters() {
+            const yearVal = document.getElementById('yearSelect').value;
+            const quarterSelect = document.getElementById('quarterSelect');
+            quarterSelect.innerHTML = '<option value="all">All Quarters</option>';
+            quarterSelect.disabled = (yearVal === 'all');
+            
+            if (yearVal !== 'all') {
+                const yearData = dashboardData.instruments[currentInstrument].by_period[yearVal];
+                if (yearData && yearData.quarters) {
+                    Object.keys(yearData.quarters).sort().forEach(q => {
+                        const opt = document.createElement('option');
+                        opt.value = q;
+                        opt.textContent = q;
+                        quarterSelect.appendChild(opt);
+                    });
+                }
+            }
+        }
+        
+        function populateMonths() {
+            const yearVal = document.getElementById('yearSelect').value;
+            const quarterVal = document.getElementById('quarterSelect').value;
+            const monthSelect = document.getElementById('monthSelect');
+            monthSelect.innerHTML = '<option value="all">All Months</option>';
+            
+            if (yearVal === 'all') {
+                monthSelect.disabled = true;
+                return;
+            }
+            
+            // Allow month selection even without specific quarter
+            monthSelect.disabled = false;
+            
+            const monthNames = {
+                'M01': 'January', 'M02': 'February', 'M03': 'March',
+                'M04': 'April', 'M05': 'May', 'M06': 'June',
+                'M07': 'July', 'M08': 'August', 'M09': 'September',
+                'M10': 'October', 'M11': 'November', 'M12': 'December'
+            };
+            
+            if (quarterVal !== 'all') {
+                const quarterData = dashboardData.instruments[currentInstrument].by_period[yearVal].quarters[quarterVal];
+                if (quarterData && quarterData.months) {
+                    Object.keys(quarterData.months).sort().forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m;
+                        opt.textContent = monthNames[m] || `Month ${m.replace('M', '')}`;
+                        monthSelect.appendChild(opt);
+                    });
+                }
+            } else {
+                // If no specific quarter, show ALL months across all quarters
+                const allQuarters = dashboardData.instruments[currentInstrument].by_period[yearVal].quarters;
+                const allMonths = new Set();
+                Object.values(allQuarters).forEach(q => {
+                    if (q.months) {
+                        Object.keys(q.months).forEach(m => allMonths.add(m));
+                    }
+                });
+                Array.from(allMonths).sort().forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = monthNames[m] || `Month ${m.replace('M', '')}`;
+                    monthSelect.appendChild(opt);
+                });
+            }
+        }
+        
+        function populateWeeks() {
+            const yearVal = document.getElementById('yearSelect').value;
+            const monthVal = document.getElementById('monthSelect').value;
+            const weekSelect = document.getElementById('weekSelect');
+            weekSelect.innerHTML = '<option value="all">All Weeks</option>';
+            
+            if (yearVal === 'all') {
+                weekSelect.disabled = true;
+                return;
+            }
+            
+            weekSelect.disabled = false;
+            
+            const allQuarters = dashboardData.instruments[currentInstrument].by_period[yearVal].quarters;
+            
+            // If month is selected, show weeks for that specific month
+            if (monthVal !== 'all') {
+                for (const q of Object.values(allQuarters)) {
+                    if (q.months && q.months[monthVal] && q.months[monthVal].weeks) {
+                        Object.keys(q.months[monthVal].weeks).sort().forEach(w => {
+                            const opt = document.createElement('option');
+                            opt.value = w;
+                            opt.textContent = w;
+                            weekSelect.appendChild(opt);
+                        });
+                        break;
+                    }
+                }
+            } else {
+                // Month is 'all' - show ALL weeks across all months in the year
+                const allWeeks = new Set();
+                for (const q of Object.values(allQuarters)) {
+                    if (q.months) {
+                        for (const month of Object.values(q.months)) {
+                            if (month.weeks) {
+                                Object.keys(month.weeks).forEach(w => allWeeks.add(w));
+                            }
+                        }
+                    }
+                }
+                // Sort weeks properly (W1, W2, ..., W52, W53)
+                Array.from(allWeeks).sort((a, b) => {
+                    const numA = parseInt(a.substring(1));
+                    const numB = parseInt(b.substring(1));
+                    return numA - numB;
+                }).forEach(w => {
+                    const opt = document.createElement('option');
+                    opt.value = w;
+                    opt.textContent = w;
+                    weekSelect.appendChild(opt);
+                });
+            }
+        }
+        
+        function displayLadderOverview(ladderData, periodLabel, setupData) {
+            displayKeyTakeaways(ladderData, periodLabel);
+            displayEntryVolumeCharts(ladderData);
+            displayWinRateCharts(ladderData);
+            
+            // Display setup type analysis if available
+            const data = dashboardData.instruments[currentInstrument];
+            const allTimeSetupData = data.setup_type_by_entry_ladder;
+            const periodSetupData = setupData || allTimeSetupData;
+            
+            if (allTimeSetupData && periodSetupData) {
+                displaySetupTypeCharts(periodSetupData, allTimeSetupData);
+                displayPnLBySetupType(periodSetupData, allTimeSetupData);
+            }
+        }
+        
+        function updatePnLTab() {
+            // Get current period and setup data (same logic as updateDisplay)
+            const instrumentData = dashboardData.instruments[currentInstrument];
+            let setupData = instrumentData.setup_type_by_entry_ladder;
+            let ladderData = instrumentData[currentTradeFilter === 'primary' ? 'ladder_analysis_directional' : currentTradeFilter === 'reversals' ? 'ladder_analysis_reversals' : 'ladder_analysis'];
+            let periodLabel = 'All Time';
+            
+            try {
+                const yearVal = document.getElementById('yearSelect').value;
+                const quarterVal = document.getElementById('quarterSelect').value;
+                const monthVal = document.getElementById('monthSelect').value;
+                const weekVal = document.getElementById('weekSelect').value;
+                
+                // Build ladder key based on trade filter
+                let ladderKey = 'ladder_analysis';
+                if (currentTradeFilter === 'primary') {
+                    ladderKey = 'ladder_analysis_directional';
+                } else if (currentTradeFilter === 'reversals') {
+                    ladderKey = 'ladder_analysis_reversals';
+                }
+                
+                // Month level (if selected)
+                if (monthVal !== 'all') {
+                    if (yearVal !== 'all' && quarterVal !== 'all') {
+                        const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
+                        periodLabel = `${yearVal} ${quarterVal} ${monthVal}`;
+                        if (monthData['setup_type_by_entry_ladder']) setupData = monthData['setup_type_by_entry_ladder'];
+                        if (monthData[ladderKey]) ladderData = monthData[ladderKey];
+                    }
+                }
+                // Quarter level (if selected)
+                else if (quarterVal !== 'all') {
+                    if (yearVal !== 'all') {
+                        const quarterData = instrumentData.by_period[yearVal].quarters[quarterVal];
+                        periodLabel = `${yearVal} ${quarterVal}`;
+                        if (quarterData['setup_type_by_entry_ladder']) setupData = quarterData['setup_type_by_entry_ladder'];
+                        if (quarterData[ladderKey]) ladderData = quarterData[ladderKey];
+                    }
+                }
+                // Year level (if selected)
+                else if (yearVal !== 'all') {
+                    const yearData = instrumentData.by_period[yearVal];
+                    periodLabel = `${yearVal} Full Year`;
+                    if (yearData['setup_type_by_entry_ladder']) setupData = yearData['setup_type_by_entry_ladder'];
+                    if (yearData[ladderKey]) ladderData = yearData[ladderKey];
+                }
+            } catch (e) {
+                console.error('Error in updatePnLTab:', e);
+            }
+            
+            // Display P&L tab charts
+            displayPnLTabCharts(setupData, periodLabel, ladderData);
+            displayHierarchicalPnLChart();
+            displayAvgWinLossByLadder(ladderData);
+        }
+        
+        function displayPnLTabCharts(setupTypeData, periodLabel, ladderData) {
+            // UP LADDERS CHART (ORH, UL1-UL10) - Bull Setup & Reversal Short
+            const upLadderOrder = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            
+            const upTraces = [
+                {
+                    x: upLadderOrder,
+                    y: upLadderOrder.map(l => setupTypeData['Bull Setup']?.[l]?.pnl_total || null),
+                    name: 'Bull Setup',
+                    type: 'bar',
+                    marker: { color: '#a6e3a1' },
+                    text: upLadderOrder.map(l => setupTypeData['Bull Setup']?.[l] ? `$${(setupTypeData['Bull Setup'][l].pnl_total).toLocaleString()}` : ''),
+                    textposition: 'outside',
+                    textfont: { size: 18, color: '#cdd6f4' },
+                    customdata: upLadderOrder.map(l => {
+                        const data = setupTypeData['Bull Setup']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                },
+                {
+                    x: upLadderOrder,
+                    y: upLadderOrder.map(l => setupTypeData['Reversal Short']?.[l]?.pnl_total || null),
+                    name: 'Reversal Short',
+                    type: 'bar',
+                    marker: { color: '#f38ba8' },
+                    text: upLadderOrder.map(l => setupTypeData['Reversal Short']?.[l] ? `$${(setupTypeData['Reversal Short'][l].pnl_total).toLocaleString()}` : ''),
+                    textposition: 'outside',
+                    textfont: { size: 18, color: '#cdd6f4' },
+                    customdata: upLadderOrder.map(l => {
+                        const data = setupTypeData['Reversal Short']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                }
+            ];
+            
+            const totalBullPnL = upLadderOrder.reduce((sum, l) => sum + (setupTypeData['Bull Setup']?.[l]?.pnl_total || 0), 0);
+            const totalRSPnL = upLadderOrder.reduce((sum, l) => sum + (setupTypeData['Reversal Short']?.[l]?.pnl_total || 0), 0);
+            const upLayout = {
+                title: { text: `P&L by Setup Type — Up Ladders (Bull: $${totalBullPnL.toLocaleString()} | RS: $${totalRSPnL.toLocaleString()})`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { title: 'Total P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('pnlSetupTypeUpLadders', upTraces, upLayout, { responsive: true });
+            
+            // DOWN LADDERS CHART (ORL, DL1-DL10) - Short Setup & Reversal Long
+            const downLadderOrder = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            const downTraces = [
+                {
+                    x: downLadderOrder,
+                    y: downLadderOrder.map(l => setupTypeData['Short Setup']?.[l]?.pnl_total || null),
+                    name: 'Short Setup',
+                    type: 'bar',
+                    marker: { color: '#f38ba8' },
+                    text: downLadderOrder.map(l => setupTypeData['Short Setup']?.[l] ? `$${(setupTypeData['Short Setup'][l].pnl_total).toLocaleString()}` : ''),
+                    textposition: 'outside',
+                    textfont: { size: 18, color: '#cdd6f4' },
+                    customdata: downLadderOrder.map(l => {
+                        const data = setupTypeData['Short Setup']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                },
+                {
+                    x: downLadderOrder,
+                    y: downLadderOrder.map(l => setupTypeData['Reversal Long']?.[l]?.pnl_total || null),
+                    name: 'Reversal Long',
+                    type: 'bar',
+                    marker: { color: '#74c7ec' },
+                    text: downLadderOrder.map(l => setupTypeData['Reversal Long']?.[l] ? `$${(setupTypeData['Reversal Long'][l].pnl_total).toLocaleString()}` : ''),
+                    textposition: 'outside',
+                    textfont: { size: 18, color: '#cdd6f4' },
+                    customdata: downLadderOrder.map(l => {
+                        const data = setupTypeData['Reversal Long']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                }
+            ];
+            
+            const totalSSPnL = downLadderOrder.reduce((sum, l) => sum + (setupTypeData['Short Setup']?.[l]?.pnl_total || 0), 0);
+            const totalRLPnL = downLadderOrder.reduce((sum, l) => sum + (setupTypeData['Reversal Long']?.[l]?.pnl_total || 0), 0);
+            const downLayout = {
+                title: { text: `P&L by Setup Type — Down Ladders (SS: $${totalSSPnL.toLocaleString()} | RL: $${totalRLPnL.toLocaleString()})`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { title: 'Total P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('pnlSetupTypeDownLadders', downTraces, downLayout, { responsive: true });
+            
+            // Display P&L Key Takeaways
+            displayPnLKeyTakeaways(setupTypeData, periodLabel);
+        }
+        
+        function displayPnLKeyTakeaways(setupTypeData, periodLabel) {
+            const container = document.getElementById('pnlKeyTakeaways');
+            
+            // Calculate totals
+            const upLadderOrder = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            const downLadderOrder = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            const bullPnL = upLadderOrder.reduce((sum, l) => sum + (setupTypeData['Bull Setup']?.[l]?.pnl_total || 0), 0);
+            const rsPnL = upLadderOrder.reduce((sum, l) => sum + (setupTypeData['Reversal Short']?.[l]?.pnl_total || 0), 0);
+            const ssPnL = downLadderOrder.reduce((sum, l) => sum + (setupTypeData['Short Setup']?.[l]?.pnl_total || 0), 0);
+            const rlPnL = downLadderOrder.reduce((sum, l) => sum + (setupTypeData['Reversal Long']?.[l]?.pnl_total || 0), 0);
+            
+            const totalPnL = bullPnL + rsPnL + ssPnL + rlPnL;
+            
+            // Find best and worst ladders
+            let bestLadder = { name: '', pnl: Number.NEGATIVE_INFINITY };
+            let worstLadder = { name: '', pnl: Number.POSITIVE_INFINITY };
+            
+            [...upLadderOrder, ...downLadderOrder].forEach(ladder => {
+                const bull = setupTypeData['Bull Setup']?.[ladder]?.pnl_total || 0;
+                const rs = setupTypeData['Reversal Short']?.[ladder]?.pnl_total || 0;
+                const ss = setupTypeData['Short Setup']?.[ladder]?.pnl_total || 0;
+                const rl = setupTypeData['Reversal Long']?.[ladder]?.pnl_total || 0;
+                const ladderPnL = bull + rs + ss + rl;
+                
+                if (ladderPnL > bestLadder.pnl) {
+                    bestLadder = { name: ladder, pnl: ladderPnL };
+                }
+                if (ladderPnL < worstLadder.pnl) {
+                    worstLadder = { name: ladder, pnl: ladderPnL };
+                }
+            });
+            
+            const html = `
+                <strong>📊 KEY TAKEAWAYS — ${periodLabel}</strong>
+                <div style="margin-top: 10px; font-size: 0.9em; line-height: 1.8;">
+                    <div>▸ <strong>Total P&L:</strong> <span style="color: ${totalPnL >= 0 ? '#a6e3a1' : '#f38ba8'}">$${totalPnL.toLocaleString()}</span></div>
+                    <div>▸ <strong>Bull Setup:</strong> <span style="color: ${bullPnL >= 0 ? '#a6e3a1' : '#f38ba8'}">$${bullPnL.toLocaleString()}</span></div>
+                    <div>▸ <strong>Reversal Short:</strong> <span style="color: ${rsPnL >= 0 ? '#a6e3a1' : '#f38ba8'}">$${rsPnL.toLocaleString()}</span></div>
+                    <div>▸ <strong>Short Setup:</strong> <span style="color: ${ssPnL >= 0 ? '#a6e3a1' : '#f38ba8'}">$${ssPnL.toLocaleString()}</span></div>
+                    <div>▸ <strong>Reversal Long:</strong> <span style="color: ${rlPnL >= 0 ? '#a6e3a1' : '#f38ba8'}">$${rlPnL.toLocaleString()}</span></div>
+                    <div style="margin-top: 10px; border-top: 1px solid #45475a; padding-top: 10px;">
+                        <div>▸ <strong>Best Ladder:</strong> ${bestLadder.name} — <span style="color: ${bestLadder.pnl >= 0 ? '#a6e3a1' : '#f38ba8'}">$${bestLadder.pnl.toLocaleString()}</span></div>
+                        <div>▸ <strong>Worst Ladder:</strong> ${worstLadder.name} — <span style="color: ${worstLadder.pnl >= 0 ? '#a6e3a1' : '#f38ba8'}">$${worstLadder.pnl.toLocaleString()}</span></div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function displayHierarchicalPnLChart() {
+            const instrumentData = dashboardData.instruments[currentInstrument];
+            const yearVal = document.getElementById('yearSelect').value;
+            const quarterVal = document.getElementById('quarterSelect').value;
+            const monthVal = document.getElementById('monthSelect').value;
+            const weekVal = document.getElementById('weekSelect').value;
+            
+            let labels = [];
+            let pnlValues = [];
+            let chartTitle = '';
+            
+            // Custom sort functions
+            const sortQuarters = (a, b) => {
+                const qOrder = { 'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4 };
+                return (qOrder[a] || 999) - (qOrder[b] || 999);
+            };
+            
+            const sortMonths = (a, b) => {
+                const mNum = parseInt(a.replace('M', '')) - parseInt(b.replace('M', ''));
+                return mNum;
+            };
+            
+            const sortWeeks = (a, b) => {
+                const wNum = parseInt(a.replace('W', '')) - parseInt(b.replace('W', ''));
+                return wNum;
+            };
+            
+            // Determine what level to display
+            if (weekVal !== 'all') {
+                // Week selected → show daily breakdown
+                try {
+                    const weekData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal].weeks[weekVal];
+                    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    labels = dayLabels;
+                    pnlValues = [
+                        weekData.daily_pnl?.day1 || 0,
+                        weekData.daily_pnl?.day2 || 0,
+                        weekData.daily_pnl?.day3 || 0,
+                        weekData.daily_pnl?.day4 || 0,
+                        weekData.daily_pnl?.day5 || 0,
+                        weekData.daily_pnl?.day6 || 0,
+                        weekData.daily_pnl?.day7 || 0
+                    ];
+                    chartTitle = `Daily P&L — ${yearVal} ${quarterVal} ${monthVal} ${weekVal}`;
+                } catch(e) {
+                    // Fall back to showing week summary
+                    labels = [weekVal];
+                    pnlValues = [0];
+                    chartTitle = `Daily P&L — ${weekVal}`;
+                }
+            } else if (monthVal !== 'all') {
+                // Month selected → show weekly breakdown
+                try {
+                    const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
+                    if (monthData.weeks) {
+                        labels = Object.keys(monthData.weeks).sort(sortWeeks);
+                        pnlValues = labels.map(w => {
+                            const weekData = monthData.weeks[w];
+                            if (weekData.summary?.pnl !== undefined) {
+                                return weekData.summary.pnl;
+                            } else if (weekData.by_day) {
+                                // Calculate from by_day data
+                                return Object.values(weekData.by_day).reduce((sum, day) => sum + (day.pnl || 0), 0);
+                            }
+                            return 0;
+                        });
+                    }
+                    chartTitle = `Weekly P&L — ${yearVal} ${quarterVal} ${monthVal}`;
+                } catch(e) {
+                    labels = [monthVal];
+                    pnlValues = [0];
+                    chartTitle = `Weekly P&L — ${monthVal}`;
+                }
+            } else if (quarterVal !== 'all') {
+                // Quarter selected → show monthly breakdown
+                try {
+                    const quarterData = instrumentData.by_period[yearVal].quarters[quarterVal];
+                    if (quarterData.months) {
+                        labels = Object.keys(quarterData.months).sort(sortMonths);
+                        pnlValues = labels.map(m => quarterData.months[m].summary?.pnl || 0);
+                        // Convert month names to readable format
+                        labels = labels.map(m => {
+                            const monthNum = parseInt(m.replace('M', ''));
+                            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            return monthNames[monthNum - 1] || m;
+                        });
+                    }
+                    chartTitle = `Monthly P&L — ${yearVal} ${quarterVal}`;
+                } catch(e) {
+                    labels = [quarterVal];
+                    pnlValues = [0];
+                    chartTitle = `Monthly P&L — ${quarterVal}`;
+                }
+            } else if (yearVal !== 'all') {
+                // Year selected → show quarterly breakdown
+                try {
+                    const yearData = instrumentData.by_period[yearVal];
+                    if (yearData.quarters) {
+                        labels = Object.keys(yearData.quarters).sort(sortQuarters);
+                        pnlValues = labels.map(q => yearData.quarters[q].summary?.pnl || 0);
+                    }
+                    chartTitle = `Quarterly P&L — ${yearVal}`;
+                } catch(e) {
+                    labels = [yearVal];
+                    pnlValues = [0];
+                    chartTitle = `Quarterly P&L — ${yearVal}`;
+                }
+            } else {
+                // All time → show quarterly breakdown across all years
+                const allYears = Object.keys(instrumentData.by_period).sort(); // Oldest to newest (left to right)
+                labels = [];
+                pnlValues = [];
+                allYears.forEach(year => {
+                    const yearData = instrumentData.by_period[year];
+                    if (yearData.quarters) {
+                        Object.keys(yearData.quarters).sort(sortQuarters).forEach(q => {
+                            labels.push(`${year} ${q}`);
+                            pnlValues.push(yearData.quarters[q].summary?.pnl || 0);
+                        });
+                    }
+                });
+                chartTitle = 'Quarterly P&L — All Time';
+            }
+            
+            // Create bar chart
+            const trace = {
+                x: labels,
+                y: pnlValues,
+                type: 'bar',
+                marker: {
+                    color: pnlValues.map(v => v >= 0 ? '#a6e3a1' : '#f38ba8')
+                },
+                text: pnlValues.map(v => `$${v.toLocaleString()}`),
+                textposition: 'outside',
+                textfont: { size: 12, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>P&L: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const layout = {
+                title: { text: chartTitle, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { title: 'Net P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('pnlHierarchicalChart', [trace], layout, { responsive: true });
+            
+            // Update title
+            document.getElementById('hierarchyChartTitle').textContent = chartTitle;
+        }
+        
+        function displayAvgWinLossByLadder(ladderData) {
+            // UP LADDERS (ORH, UL1-UL10)
+            const upLadderOrder = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            
+            // Calculate avg win and avg loss for each ladder (longs)
+            const upAvgWin = upLadderOrder.map(l => {
+                const ladder = ladderData[l];
+                if (!ladder || !ladder.Long) return 0;
+                const longData = ladder.Long;
+                if (longData.wins === 0) return 0;
+                return Math.abs(longData.pnl / longData.trades * (longData.wins / (longData.wins + longData.losses))); // Simple approximation
+            });
+            
+            const upAvgLoss = upLadderOrder.map(l => {
+                const ladder = ladderData[l];
+                if (!ladder || !ladder.Long) return 0;
+                const longData = ladder.Long;
+                if (longData.losses === 0) return 0;
+                return Math.abs(longData.pnl / longData.trades * (longData.losses / (longData.wins + longData.losses))); // Simple approximation
+            });
+            
+            // For better accuracy, calculate from wins/losses ratio
+            const upWinsTrace = {
+                x: upLadderOrder,
+                y: upLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Long || ladder.Long.wins === 0) return 0;
+                    const longData = ladder.Long;
+                    // Estimate avg win from pnl and win count
+                    const totalWinPnL = longData.pnl * (longData.wins / (longData.wins + longData.losses || 1));
+                    return Math.max(0, totalWinPnL / longData.wins);
+                }),
+                name: 'Avg Win $',
+                type: 'bar',
+                marker: { color: '#a6e3a1' },
+                text: upLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Long || ladder.Long.wins === 0) return '';
+                    const longData = ladder.Long;
+                    const totalWinPnL = longData.pnl * (longData.wins / (longData.wins + longData.losses || 1));
+                    const avgWin = Math.max(0, totalWinPnL / longData.wins);
+                    return `$${avgWin.toFixed(0)}`;
+                }),
+                textposition: 'outside',
+                textfont: { size: 14, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>Avg Win: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const upLossesTrace = {
+                x: upLadderOrder,
+                y: upLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Long || ladder.Long.losses === 0) return 0;
+                    const longData = ladder.Long;
+                    // Estimate avg loss from pnl and loss count
+                    const totalLossPnL = longData.pnl * (longData.losses / (longData.wins + longData.losses || 1));
+                    return Math.abs(totalLossPnL / longData.losses);
+                }),
+                name: 'Avg Loss $',
+                type: 'bar',
+                marker: { color: '#f38ba8' },
+                text: upLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Long || ladder.Long.losses === 0) return '';
+                    const longData = ladder.Long;
+                    const totalLossPnL = longData.pnl * (longData.losses / (longData.wins + longData.losses || 1));
+                    const avgLoss = Math.abs(totalLossPnL / longData.losses);
+                    return `$${avgLoss.toFixed(0)}`;
+                }),
+                textposition: 'outside',
+                textfont: { size: 14, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>Avg Loss: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const upLayout = {
+                title: { text: 'Avg Win $ vs |Avg Loss $| — Longs', x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { title: '$ per Trade' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('avgWinLossUpLadders', [upWinsTrace, upLossesTrace], upLayout, { responsive: true });
+            
+            // DOWN LADDERS (ORL, DL1-DL10)
+            const downLadderOrder = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            const downWinsTrace = {
+                x: downLadderOrder,
+                y: downLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Short || ladder.Short.wins === 0) return 0;
+                    const shortData = ladder.Short;
+                    const totalWinPnL = shortData.pnl * (shortData.wins / (shortData.wins + shortData.losses || 1));
+                    return Math.max(0, totalWinPnL / shortData.wins);
+                }),
+                name: 'Avg Win $',
+                type: 'bar',
+                marker: { color: '#a6e3a1' },
+                text: downLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Short || ladder.Short.wins === 0) return '';
+                    const shortData = ladder.Short;
+                    const totalWinPnL = shortData.pnl * (shortData.wins / (shortData.wins + shortData.losses || 1));
+                    const avgWin = Math.max(0, totalWinPnL / shortData.wins);
+                    return `$${avgWin.toFixed(0)}`;
+                }),
+                textposition: 'outside',
+                textfont: { size: 14, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>Avg Win: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const downLossesTrace = {
+                x: downLadderOrder,
+                y: downLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Short || ladder.Short.losses === 0) return 0;
+                    const shortData = ladder.Short;
+                    const totalLossPnL = shortData.pnl * (shortData.losses / (shortData.wins + shortData.losses || 1));
+                    return Math.abs(totalLossPnL / shortData.losses);
+                }),
+                name: 'Avg Loss $',
+                type: 'bar',
+                marker: { color: '#f38ba8' },
+                text: downLadderOrder.map(l => {
+                    const ladder = ladderData[l];
+                    if (!ladder || !ladder.Short || ladder.Short.losses === 0) return '';
+                    const shortData = ladder.Short;
+                    const totalLossPnL = shortData.pnl * (shortData.losses / (shortData.wins + shortData.losses || 1));
+                    const avgLoss = Math.abs(totalLossPnL / shortData.losses);
+                    return `$${avgLoss.toFixed(0)}`;
+                }),
+                textposition: 'outside',
+                textfont: { size: 14, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>Avg Loss: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const downLayout = {
+                title: { text: 'Avg Win $ vs |Avg Loss $| — Shorts', x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { title: '$ per Trade' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('avgWinLossDownLadders', [downWinsTrace, downLossesTrace], downLayout, { responsive: true });
+        }
+        
+        function displaySampleSizeSummary() {
+            const container = document.getElementById('sampleSizeSummary');
+            
+            // Get data for current instrument only
+            const instrumentData = dashboardData.instruments[currentInstrument];
+            
+            // Calculate longs and shorts for current instrument
+            let longsTotal = 0, shortsTotal = 0;
+            ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'].forEach(ladder => {
+                if (instrumentData.ladder_analysis[ladder] && instrumentData.ladder_analysis[ladder].Long) {
+                    longsTotal += instrumentData.ladder_analysis[ladder].Long.trades;
+                }
+            });
+            ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'].forEach(ladder => {
+                if (instrumentData.ladder_analysis[ladder] && instrumentData.ladder_analysis[ladder].Short) {
+                    shortsTotal += instrumentData.ladder_analysis[ladder].Short.trades;
+                }
+            });
+            
+            const totalTrades = longsTotal + shortsTotal;
+            const contractSize = currentInstrument === 'NQ/MNQ' ? 3 : 5;
+            const longsPct = ((longsTotal / totalTrades * 100).toFixed(1));
+            const shortsPct = ((shortsTotal / totalTrades * 100).toFixed(1));
+            
+            const html = `
+                <div class="summary-item">
+                    <span class="summary-label">Total Trades</span>
+                    <div class="summary-value">${totalTrades.toLocaleString()}</div>
+                    <div class="summary-detail">2023 - 2026</div>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Longs vs Shorts</span>
+                    <div class="summary-value">${longsTotal.toLocaleString()} | ${shortsTotal.toLocaleString()}</div>
+                    <div class="summary-detail">${longsPct}% Longs | ${shortsPct}% Shorts</div>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Contract Size</span>
+                    <div class="summary-value">${contractSize}</div>
+                    <div class="summary-detail">${currentInstrument === 'NQ/MNQ' ? 'Micro E-mini Nasdaq' : 'Micro E-mini S&P 500'}</div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function displayKeyTakeaways(ladderData, periodLabel) {
+            const container = document.getElementById('keyTakeaways');
+            const MIN_TRADES = 10;
+            
+            // Build ordered ladder sequences
+            const longSequence = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8'];
+            const shortSequence = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            // Filter for valid sample sizes
+            const validLongs = longSequence
+                .filter(l => ladderData[l] && ladderData[l].Long && ladderData[l].Long.trades >= MIN_TRADES)
+                .map(l => ({ ladder: l, ...ladderData[l].Long }));
+            
+            const validShorts = shortSequence
+                .filter(l => ladderData[l] && ladderData[l].Short && ladderData[l].Short.trades >= MIN_TRADES)
+                .map(l => ({ ladder: l, ...ladderData[l].Short }));
+            
+            // Calculate aggregates
+            const totalLongWins = validLongs.reduce((sum, d) => sum + d.wins, 0);
+            const totalLongTrades = validLongs.reduce((sum, d) => sum + d.trades, 0);
+            const totalShortWins = validShorts.reduce((sum, d) => sum + d.wins, 0);
+            const totalShortTrades = validShorts.reduce((sum, d) => sum + d.trades, 0);
+            const longAvgWinRate = totalLongTrades > 0 ? (totalLongWins / totalLongTrades * 100) : 0;
+            const shortAvgWinRate = totalShortTrades > 0 ? (totalShortWins / totalShortTrades * 100) : 0;
+            
+            // Find sticking points (sharp drop from previous rung)
+            let longStickingPoint = null;
+            for (let i = 1; i < validLongs.length; i++) {
+                const drop = validLongs[i-1].win_pct - validLongs[i].win_pct;
+                if (drop > 8 && validLongs[i].win_pct < 40) {
+                    longStickingPoint = { ladder: validLongs[i].ladder, rate: validLongs[i].win_pct, drop: drop };
+                    break;
+                }
+            }
+            
+            // Analyze short progression (do they improve at each level?)
+            let shortTrendPositive = true;
+            for (let i = 1; i < validShorts.length; i++) {
+                if (validShorts[i].win_pct < validShorts[i-1].win_pct) {
+                    shortTrendPositive = false;
+                    break;
+                }
+            }
+            
+            // Find best/worst
+            const bestLong = validLongs.reduce((prev, curr) => curr.win_pct > prev.win_pct ? curr : prev);
+            const bestShort = validShorts.reduce((prev, curr) => curr.win_pct > prev.win_pct ? curr : prev);
+            
+            let html = `<h3>⚡ KEY TAKEAWAYS${periodLabel && periodLabel !== 'All Data (2023-2026)' ? ` (${periodLabel})` : ''}</h3><ul>`;
+            
+            // Key insight about longs
+            if (longStickingPoint) {
+                html += `<li><strong>Long Sticking Point:</strong> ${longStickingPoint.ladder} shows a sharp drop to ${longStickingPoint.rate.toFixed(1)}%. If price breaks through, performance improves significantly above.</li>`;
+            } else {
+                html += `<li><strong>Long Entry Points:</strong> Most reliable entry points show ${longAvgWinRate.toFixed(1)}% average win rate (${totalLongTrades} trades).</li>`;
+            }
+            
+            // Key insight about shorts
+            if (shortTrendPositive) {
+                html += `<li><strong>Short Progression:</strong> Performance improves at each ladder level (${validShorts[0].win_pct.toFixed(1)}% → ${validShorts[validShorts.length-1].win_pct.toFixed(1)}%), indicating strong downtrend structure.</li>`;
+            } else {
+                html += `<li><strong>Short Progression:</strong> Mixed performance across ladder levels. Average: ${shortAvgWinRate.toFixed(1)}% (${totalShortTrades} trades).</li>`;
+            }
+            
+            // Best performer info
+            html += `<li><strong>Best Performer:</strong> ${bestShort.ladder} shorts at ${bestShort.win_pct.toFixed(1)}% (${bestShort.trades} trades)</li>`;
+            html += `</ul>`;
+            
+            container.innerHTML = html;
+        }
+        
+        function displayWinRateCharts(ladderData) {
+            const longLabels = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            const shortLabels = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            // Long trades chart - show ALL ladders
+            const longData = longLabels
+                .filter(l => ladderData[l] && ladderData[l].Long)
+                .map(l => ({
+                    label: l,
+                    value: ladderData[l].Long.win_pct,
+                    trades: ladderData[l].Long.trades
+                }));
+            
+            const longValues = longData.map(d => d.value);
+            const longLabelsFiltered = longData.map(d => d.label);
+            const longColors = longValues.map(v => 
+                v < 40 ? '#f38ba8' :      // Red < 40%
+                v < 50 ? '#f9e2af' :      // Yellow 40-50%
+                '#a6e3a1'                  // Green >= 50%
+            );
+            const longText = longData.map(d => `${d.value.toFixed(1)}%<br/>(${d.trades})`);
+            
+            const traceLong = {
+                x: longLabelsFiltered,
+                y: longValues,
+                type: 'bar',
+                marker: { color: longColors },
+                text: longText,
+                textposition: 'outside',
+                hovertemplate: '%{x}: %{y:.1f}% win rate | %{customdata} trades<extra></extra>',
+                customdata: longData.map(d => d.trades)
+            };
+            
+            const totalLongTrades = longData.reduce((sum, d) => sum + d.trades, 0);
+            const layoutLong = {
+                title: { text: `Win Rate by Ladder — Longs (${totalLongTrades.toLocaleString()} total trades)`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { range: [0, 100], title: 'Win %' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 20, b: 40, l: 50, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('winRateLongs', [traceLong], layoutLong, { responsive: true });
+            
+            // Short trades chart - show ALL ladders
+            const shortData = shortLabels
+                .filter(l => ladderData[l] && ladderData[l].Short)
+                .map(l => ({
+                    label: l,
+                    value: ladderData[l].Short.win_pct,
+                    trades: ladderData[l].Short.trades
+                }));
+            
+            const shortValues = shortData.map(d => d.value);
+            const shortLabelsFiltered = shortData.map(d => d.label);
+            const shortColors = shortValues.map(v => 
+                v < 40 ? '#f38ba8' :      // Red < 40%
+                v < 50 ? '#f9e2af' :      // Yellow 40-50%
+                '#a6e3a1'                  // Green >= 50%
+            );
+            const shortText = shortData.map(d => `${d.value.toFixed(1)}%<br/>(${d.trades})`);
+            
+            const traceShort = {
+                x: shortLabelsFiltered,
+                y: shortValues,
+                type: 'bar',
+                marker: { color: shortColors },
+                text: shortText,
+                textposition: 'outside',
+                hovertemplate: '%{x}: %{y:.1f}% win rate | %{customdata} trades<extra></extra>',
+                customdata: shortData.map(d => d.trades)
+            };
+            
+            const totalShortTrades = shortData.reduce((sum, d) => sum + d.trades, 0);
+            const layoutShort = {
+                title: { text: `Win Rate by Ladder — Shorts (${totalShortTrades.toLocaleString()} total trades)`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { range: [0, 100], title: 'Win %' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 50, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('winRateShorts', [traceShort], layoutShort, { responsive: true });
+        }
+        
+        function displayEntryVolumeCharts(ladderData) {
+            const longLabels = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            const shortLabels = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            // Long volume chart - show ALL ladders
+            const longData = longLabels
+                .filter(l => ladderData[l] && ladderData[l].Long)
+                .map(l => ({
+                    label: l,
+                    trades: ladderData[l].Long.trades
+                }));
+            
+            const longValues = longData.map(d => d.trades);
+            const longLabelsFiltered = longData.map(d => d.label);
+            
+            const traceLongVol = {
+                x: longLabelsFiltered,
+                y: longValues,
+                type: 'bar',
+                marker: { color: '#89b4fa' },
+                text: longValues.map(v => v > 0 ? v : ''),
+                textposition: 'outside',
+                hovertemplate: '%{x}: %{y} trades<extra></extra>'
+            };
+            
+            const totalLongVol = longValues.reduce((a, b) => a + b, 0);
+            const layoutLongVol = {
+                title: { text: `Entry Volume by Ladder — Longs (${totalLongVol.toLocaleString()} total trades)`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { title: 'Number of Trades' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 60, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('volumeLongs', [traceLongVol], layoutLongVol, { responsive: true });
+            
+            // Short volume chart - show ALL ladders
+            const shortData = shortLabels
+                .filter(l => ladderData[l] && ladderData[l].Short)
+                .map(l => ({
+                    label: l,
+                    trades: ladderData[l].Short.trades
+                }));
+            
+            const shortValues = shortData.map(d => d.trades);
+            const shortLabelsFiltered = shortData.map(d => d.label);
+            
+            const traceShortVol = {
+                x: shortLabelsFiltered,
+                y: shortValues,
+                type: 'bar',
+                marker: { color: '#f5c2e7' },
+                text: shortValues.map(v => v > 0 ? v : ''),
+                textposition: 'outside',
+                hovertemplate: '%{x}: %{y} trades<extra></extra>'
+            };
+            
+            const totalShortVol = shortValues.reduce((a, b) => a + b, 0);
+            const layoutShortVol = {
+                title: { text: `Entry Volume by Ladder — Shorts (${totalShortVol.toLocaleString()} total trades)`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { title: 'Number of Trades' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 20, b: 40, l: 60, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('volumeShorts', [traceShortVol], layoutShortVol, { responsive: true });
+        }
+        
+        function displaySetupTypeCharts(setupTypeData) {
+            // Setup type comparison for UP ladders (Bull Setup vs Reversal Short)
+            const upLadders = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            
+            const bullSetupUp = [];
+            const bullTradesUp = [];
+            const reversalShortUp = [];
+            const reversalShortTradesUp = [];
+            const bullLabels = [];
+            
+            upLadders.forEach(ladder => {
+                if (setupTypeData['Bull Setup'] && setupTypeData['Bull Setup'][ladder]) {
+                    bullSetupUp.push(setupTypeData['Bull Setup'][ladder].win_pct);
+                    bullTradesUp.push(setupTypeData['Bull Setup'][ladder].trades);
+                    bullLabels.push(ladder);
+                }
+            });
+            
+            const reversalShortLabels = [];
+            upLadders.forEach(ladder => {
+                if (setupTypeData['Reversal Short'] && setupTypeData['Reversal Short'][ladder]) {
+                    reversalShortUp.push(setupTypeData['Reversal Short'][ladder].win_pct);
+                    reversalShortTradesUp.push(setupTypeData['Reversal Short'][ladder].trades);
+                    reversalShortLabels.push(ladder);
+                }
+            });
+            
+            // Merge and sort labels
+            const allUpLabels = [...new Set([...bullLabels, ...reversalShortLabels])].sort((a, b) => {
+                const order = ['ORH', ...Array.from({length: 10}, (_, i) => 'UL' + (i+1))];
+                return order.indexOf(a) - order.indexOf(b);
+            });
+            
+            const bullWinValues = allUpLabels.map(l => {
+                const idx = bullLabels.indexOf(l);
+                return idx >= 0 ? bullSetupUp[idx] : null;
+            });
+            const bullTradeValues = allUpLabels.map(l => {
+                const idx = bullLabels.indexOf(l);
+                return idx >= 0 ? bullTradesUp[idx] : null;
+            });
+            
+            const bullTrace = {
+                x: allUpLabels,
+                y: bullWinValues,
+                name: 'Bull Setup',
+                type: 'bar',
+                marker: { color: '#a6e3a1' },
+                text: allUpLabels.map(l => {
+                    const idx = bullLabels.indexOf(l);
+                    return idx >= 0 ? `${bullSetupUp[idx].toFixed(1)}%<br/>(${bullTradesUp[idx]})` : '';
+                }),
+                textposition: 'outside',
+                hovertemplate: '%{x} Bull Setup: %{y:.1f}% (%{customdata} trades)<extra></extra>',
+                customdata: bullTradeValues
+            };
+            
+            const rsWinValues = allUpLabels.map(l => {
+                const idx = reversalShortLabels.indexOf(l);
+                return idx >= 0 ? reversalShortUp[idx] : null;
+            });
+            const rsTradeValues = allUpLabels.map(l => {
+                const idx = reversalShortLabels.indexOf(l);
+                return idx >= 0 ? reversalShortTradesUp[idx] : null;
+            });
+            
+            const rsTrace = {
+                x: allUpLabels,
+                y: rsWinValues,
+                name: 'Reversal Short',
+                type: 'bar',
+                marker: { color: '#f38ba8' },
+                text: allUpLabels.map(l => {
+                    const idx = reversalShortLabels.indexOf(l);
+                    return idx >= 0 ? `${reversalShortUp[idx].toFixed(1)}%<br/>(${reversalShortTradesUp[idx]})` : '';
+                }),
+                textposition: 'outside',
+                hovertemplate: '%{x} Reversal Short: %{y:.1f}% (%{customdata} trades)<extra></extra>',
+                customdata: rsTradeValues
+            };
+            
+            const totalBullTrades = bullTradesUp.reduce((a, b) => a + b, 0);
+            const totalRSTrades = reversalShortTradesUp.reduce((a, b) => a + b, 0);
+            const layoutUp = {
+                title: { text: `Win % by Setup Type — Up Ladders (Bull: ${totalBullTrades.toLocaleString()} | RS: ${totalRSTrades.toLocaleString()} trades)`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { range: [0, 100], title: 'Win %' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 50, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('setupTypeUpLadders', [bullTrace, rsTrace], layoutUp, { responsive: true });
+            
+            // Setup type comparison for DOWN ladders (Short Setup vs Reversal Long)
+            const downLadders = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            const shortSetupDown = [];
+            const shortTradesDown = [];
+            const reversalLongDown = [];
+            const reversalLongTradesDown = [];
+            const shortLabels = [];
+            const reversalLongLabels = [];
+            
+            downLadders.forEach(ladder => {
+                if (setupTypeData['Short Setup'] && setupTypeData['Short Setup'][ladder]) {
+                    shortSetupDown.push(setupTypeData['Short Setup'][ladder].win_pct);
+                    shortTradesDown.push(setupTypeData['Short Setup'][ladder].trades);
+                    shortLabels.push(ladder);
+                }
+            });
+            
+            downLadders.forEach(ladder => {
+                if (setupTypeData['Reversal Long'] && setupTypeData['Reversal Long'][ladder]) {
+                    reversalLongDown.push(setupTypeData['Reversal Long'][ladder].win_pct);
+                    reversalLongTradesDown.push(setupTypeData['Reversal Long'][ladder].trades);
+                    reversalLongLabels.push(ladder);
+                }
+            });
+            
+            // Merge and sort labels
+            const allDownLabels = [...new Set([...shortLabels, ...reversalLongLabels])].sort((a, b) => {
+                const order = ['ORL', ...Array.from({length: 10}, (_, i) => 'DL' + (i+1))];
+                return order.indexOf(a) - order.indexOf(b);
+            });
+            
+            const ssWinValues = allDownLabels.map(l => {
+                const idx = shortLabels.indexOf(l);
+                return idx >= 0 ? shortSetupDown[idx] : null;
+            });
+            const ssTradeValues = allDownLabels.map(l => {
+                const idx = shortLabels.indexOf(l);
+                return idx >= 0 ? shortTradesDown[idx] : null;
+            });
+            
+            const ssTrace = {
+                x: allDownLabels,
+                y: ssWinValues,
+                name: 'Short Setup',
+                type: 'bar',
+                marker: { color: '#f5c2e7' },
+                text: allDownLabels.map(l => {
+                    const idx = shortLabels.indexOf(l);
+                    return idx >= 0 ? `${shortSetupDown[idx].toFixed(1)}%<br/>(${shortTradesDown[idx]})` : '';
+                }),
+                textposition: 'outside',
+                hovertemplate: '%{x} Short Setup: %{y:.1f}% (%{customdata} trades)<extra></extra>',
+                customdata: ssTradeValues
+            };
+            
+            const rlWinValues = allDownLabels.map(l => {
+                const idx = reversalLongLabels.indexOf(l);
+                return idx >= 0 ? reversalLongDown[idx] : null;
+            });
+            const rlTradeValues = allDownLabels.map(l => {
+                const idx = reversalLongLabels.indexOf(l);
+                return idx >= 0 ? reversalLongTradesDown[idx] : null;
+            });
+            
+            const rlTrace = {
+                x: allDownLabels,
+                y: rlWinValues,
+                name: 'Reversal Long',
+                type: 'bar',
+                marker: { color: '#89b4fa' },
+                text: allDownLabels.map(l => {
+                    const idx = reversalLongLabels.indexOf(l);
+                    return idx >= 0 ? `${reversalLongDown[idx].toFixed(1)}%<br/>(${reversalLongTradesDown[idx]})` : '';
+                }),
+                textposition: 'outside',
+                hovertemplate: '%{x} Reversal Long: %{y:.1f}% (%{customdata} trades)<extra></extra>',
+                customdata: rlTradeValues
+            };
+            
+            const totalSSTrades = shortTradesDown.reduce((a, b) => a + b, 0);
+            const totalRLTrades = reversalLongTradesDown.reduce((a, b) => a + b, 0);
+            const layoutDown = {
+                title: { text: `Win % by Setup Type — Down Ladders (SS: ${totalSSTrades.toLocaleString()} | RL: ${totalRLTrades.toLocaleString()} trades)`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { range: [0, 100], title: 'Win %' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 50, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('setupTypeDownLadders', [ssTrace, rlTrace], layoutDown, { responsive: true });
+        }
+        
+        function displayPnLBySetupType(setupTypeData) {
+            // UP LADDERS CHART (ORH, UL1-UL10) - Bull Setup & Reversal Short
+            const upLadderOrder = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
+            
+            const upTraces = [
+                {
+                    x: upLadderOrder,
+                    y: upLadderOrder.map(l => setupTypeData['Bull Setup']?.[l]?.pnl_total || null),
+                    name: 'Bull Setup',
+                    type: 'bar',
+                    marker: { color: '#a6e3a1' },
+                    text: upLadderOrder.map(l => setupTypeData['Bull Setup']?.[l] ? `$${(setupTypeData['Bull Setup'][l].pnl_total).toLocaleString()}<br/>(${setupTypeData['Bull Setup'][l].trades})` : ''),
+                    textposition: 'outside',
+                    customdata: upLadderOrder.map(l => {
+                        const data = setupTypeData['Bull Setup']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                },
+                {
+                    x: upLadderOrder,
+                    y: upLadderOrder.map(l => setupTypeData['Reversal Short']?.[l]?.pnl_total || null),
+                    name: 'Reversal Short',
+                    type: 'bar',
+                    marker: { color: '#f38ba8' },
+                    text: upLadderOrder.map(l => setupTypeData['Reversal Short']?.[l] ? `$${(setupTypeData['Reversal Short'][l].pnl_total).toLocaleString()}<br/>(${setupTypeData['Reversal Short'][l].trades})` : ''),
+                    textposition: 'outside',
+                    customdata: upLadderOrder.map(l => {
+                        const data = setupTypeData['Reversal Short']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                }
+            ];
+            
+            const totalBullPnL = upLadderOrder.reduce((sum, l) => sum + (setupTypeData['Bull Setup']?.[l]?.pnl_total || 0), 0);
+            const totalRSPnL = upLadderOrder.reduce((sum, l) => sum + (setupTypeData['Reversal Short']?.[l]?.pnl_total || 0), 0);
+            const upLayout = {
+                title: { text: `P&L by Setup Type — Up Ladders (Bull: $${totalBullPnL.toLocaleString()} | RS: $${totalRSPnL.toLocaleString()})`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { title: 'Total P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('setupTypeUpLaddersP&L', upTraces, upLayout, { responsive: true });
+            
+            // DOWN LADDERS CHART (ORL, DL1-DL10) - Short Setup & Reversal Long
+            const downLadderOrder = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
+            
+            const downTraces = [
+                {
+                    x: downLadderOrder,
+                    y: downLadderOrder.map(l => setupTypeData['Short Setup']?.[l]?.pnl_total || null),
+                    name: 'Short Setup',
+                    type: 'bar',
+                    marker: { color: '#f5c2e7' },
+                    text: downLadderOrder.map(l => setupTypeData['Short Setup']?.[l] ? `$${(setupTypeData['Short Setup'][l].pnl_total).toLocaleString()}<br/>(${setupTypeData['Short Setup'][l].trades})` : ''),
+                    textposition: 'outside',
+                    customdata: downLadderOrder.map(l => {
+                        const data = setupTypeData['Short Setup']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                },
+                {
+                    x: downLadderOrder,
+                    y: downLadderOrder.map(l => setupTypeData['Reversal Long']?.[l]?.pnl_total || null),
+                    name: 'Reversal Long',
+                    type: 'bar',
+                    marker: { color: '#89b4fa' },
+                    text: downLadderOrder.map(l => setupTypeData['Reversal Long']?.[l] ? `$${(setupTypeData['Reversal Long'][l].pnl_total).toLocaleString()}<br/>(${setupTypeData['Reversal Long'][l].trades})` : ''),
+                    textposition: 'outside',
+                    customdata: downLadderOrder.map(l => {
+                        const data = setupTypeData['Reversal Long']?.[l];
+                        if (!data) return ['', '', '', ''];
+                        const wins = data.wins || 0;
+                        const losses = data.losses || 0;
+                        const gross_profit = data.gross_profit || 0;
+                        const gross_loss = data.gross_loss || 0;
+                        return [wins, losses, gross_profit, gross_loss];
+                    }),
+                    hovertemplate: '%{x}<br>Wins: %{customdata[0]}<br>Gross Profit: $%{customdata[2]:,.0f}<br>---<br>Losses: %{customdata[1]}<br>Gross Loss: $%{customdata[3]:,.0f}<br>---<br>Net P&L: $%{y:,.0f}<extra></extra>'
+                }
+            ];
+            
+            const totalSSPnL = downLadderOrder.reduce((sum, l) => sum + (setupTypeData['Short Setup']?.[l]?.pnl_total || 0), 0);
+            const totalRLPnL = downLadderOrder.reduce((sum, l) => sum + (setupTypeData['Reversal Long']?.[l]?.pnl_total || 0), 0);
+            const downLayout = {
+                title: { text: `P&L by Setup Type — Down Ladders (SS: $${totalSSPnL.toLocaleString()} | RL: $${totalRLPnL.toLocaleString()})`, x: 0.5, xanchor: 'center', font: { size: 14 } },
+                barmode: 'group',
+                yaxis: { title: 'Total P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(49, 50, 68, 0.8)' }
+            };
+            
+            Plotly.newPlot('setupTypeDownLaddersP&L', downTraces, downLayout, { responsive: true });
+        }
+        
+        // Load data on page load
+        window.onload = loadData;
+    </script>
+</body>
+</html>
