@@ -386,7 +386,120 @@
         
         <!-- TIME & DAY PATTERNS TAB -->
         <div id="time-patterns" class="tab-content">
-            <div class="error">Time & Day Patterns Tab — Coming Soon</div>
+            <div style="padding: 20px;">
+                <!-- Day of Week Performance (TOP) -->
+                <div class="section-header">📅 WIN % BY DAY OF WEEK</div>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px 0;">
+                    <div>
+                        <div id="dayOfWeekWinRateChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Hourly Performance Grouped by Quarter -->
+                <div class="section-header" style="margin-top: 50px;">⏰ HOURLY PERFORMANCE BY TRADING SESSION QUARTER</div>
+                
+                <!-- Q1: Opening 9:30-11:30 -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">Q1 Opening (9:30-11:30)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
+                            <div id="q1HourlyPnLChart" style="height: 350px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
+                            <div id="q1HourlyWinRateChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Q2: Lunch Approach 11:30-13:00 -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">Q2 Lunch Approach (11:30-13:00)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
+                            <div id="q2HourlyPnLChart" style="height: 350px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
+                            <div id="q2HourlyWinRateChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Q3: Post-Lunch 13:00-14:30 -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">Q3 Post-Lunch (13:00-14:30)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
+                            <div id="q3HourlyPnLChart" style="height: 350px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
+                            <div id="q3HourlyWinRateChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Q4: Close 14:30-16:00 -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">Q4 Close (14:30-16:00)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
+                            <div id="q4HourlyPnLChart" style="height: 350px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
+                            <div id="q4HourlyWinRateChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Day of Week Performance -->
+                <div class="section-header" style="margin-top: 50px;">📅 WIN % BY DAY OF WEEK</div>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px 0;">
+                    <div>
+                        <div id="dayOfWeekWinRateChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Trading Session Quarters -->
+                <div class="section-header" style="margin-top: 50px;">📊 TRADING SESSION QUARTERS — COMPLETE BREAKDOWN</div>
+                
+                <!-- Quarters Table -->
+                <div style="background: #313244; padding: 20px; border-radius: 8px; border: 1px solid #45475a; margin-bottom: 30px; overflow-x: auto;">
+                    <table id="quarterTable" style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #45475a;">
+                                <th style="padding: 12px; text-align: left; color: #a6e3a1;">Quarter</th>
+                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Entries</th>
+                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Win%</th>
+                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Net P&L $</th>
+                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Avg P&L $</th>
+                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Total Pts</th>
+                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Avg Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quarterTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Quarters Charts -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 30px 0;">
+                    <div>
+                        <div class="chart-subtitle">Win % by Quarter of Day</div>
+                        <div id="tradingQuarterWinRateChart" style="height: 400px;"></div>
+                    </div>
+                    <div>
+                        <div class="chart-subtitle">Net P&L $ by Quarter of Day</div>
+                        <div id="tradingQuarterPnLChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- RISK & REWARD TAB -->
@@ -421,7 +534,7 @@
         
         async function loadData() {
             try {
-                const response = await fetch('dashboard_data.json');
+                const response = await fetch('dashboard_data.json?v=' + Date.now());
                 dashboardData = await response.json();
                 
                 document.getElementById('updated').textContent = 
@@ -459,6 +572,8 @@
             // Call specific rendering function if needed
             if (tabId === 'pnl') {
                 updatePnLTab();
+            } else if (tabId === 'time-patterns') {
+                displayTimePatterns();
             }
         }
         
@@ -539,7 +654,9 @@
                         }
                     } else if (yearVal !== 'all' && monthVal === 'all') {
                         // Week selected but month is 'all' - search all quarters/months for this week
+                        let foundWeek = false;
                         for (let q in instrumentData.by_period[yearVal].quarters) {
+                            if (foundWeek) break;
                             for (let m in instrumentData.by_period[yearVal].quarters[q].months) {
                                 const monthData = instrumentData.by_period[yearVal].quarters[q].months[m];
                                 if (monthData.weeks && monthData.weeks[weekVal]) {
@@ -549,7 +666,7 @@
                                     if (weekData[ladderKey]) ladderData = weekData[ladderKey];
                                     if (weekData[setupKey]) setupData = weekData[setupKey];
                                     // Found it, break out of both loops
-                                    q = {};
+                                    foundWeek = true;
                                     break;
                                 }
                             }
@@ -1507,6 +1624,310 @@
             Plotly.newPlot('avgWinLossDownLadders', [downWinsTrace, downLossesTrace], downLayout, { responsive: true });
         }
         
+        function displayTimePatterns() {
+            try {
+                const instrumentData = dashboardData.instruments[currentInstrument];
+                
+                // Get period-specific day-of-week data if available, else use all-time
+                let dayOfWeekData = getDayOfWeekDataForPeriod(instrumentData);
+                if (currentTradeFilter === 'primary') {
+                    dayOfWeekData = dayOfWeekData || (instrumentData.by_day_of_week_directional || {});
+                } else if (currentTradeFilter === 'reversals') {
+                    dayOfWeekData = dayOfWeekData || (instrumentData.by_day_of_week_reversals || {});
+                } else {
+                    dayOfWeekData = dayOfWeekData || (instrumentData.by_day_of_week || {});
+                }
+                
+                // Hourly data (all-time only)
+                let hourlyData = instrumentData.by_hour;
+                if (currentTradeFilter === 'primary') {
+                    hourlyData = instrumentData.by_hour_directional || hourlyData;
+                } else if (currentTradeFilter === 'reversals') {
+                    hourlyData = instrumentData.by_hour_reversals || hourlyData;
+                }
+                
+                // Trading quarter data (all-time only)
+                let tradingQuarterData = instrumentData.by_trading_quarter;
+                if (currentTradeFilter === 'primary') {
+                    tradingQuarterData = instrumentData.by_trading_quarter_directional || tradingQuarterData;
+                } else if (currentTradeFilter === 'reversals') {
+                    tradingQuarterData = instrumentData.by_trading_quarter_reversals || tradingQuarterData;
+                }
+                
+                // Render all charts and table
+                displayDayOfWeekCharts(dayOfWeekData);
+                displayHourlyCharts(hourlyData);
+                displayTradingQuarterTable(tradingQuarterData);
+                displayTradingQuarterCharts(tradingQuarterData);
+            } catch (e) {
+                console.error('Error displaying time patterns:', e);
+            }
+        }
+        
+        function getDayOfWeekDataForPeriod(instrumentData) {
+            const yearVal = document.getElementById('yearSelect').value;
+            const quarterVal = document.getElementById('quarterSelect').value;
+            const monthVal = document.getElementById('monthSelect').value;
+            const weekVal = document.getElementById('weekSelect').value;
+            
+            try {
+                if (yearVal === 'all') {
+                    return null;  // No period-specific data
+                }
+                
+                if (weekVal !== 'all') {
+                    // Week level
+                    if (monthVal !== 'all' && quarterVal !== 'all') {
+                        const weekData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal].weeks[weekVal];
+                        return weekData.by_day_of_week || null;
+                    } else if (monthVal !== 'all') {
+                        const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
+                        if (monthData.weeks && monthData.weeks[weekVal]) {
+                            return monthData.weeks[weekVal].by_day_of_week || null;
+                        }
+                    } else if (quarterVal !== 'all') {
+                        for (let q in instrumentData.by_period[yearVal].quarters) {
+                            for (let m in instrumentData.by_period[yearVal].quarters[q].months) {
+                                const monthData = instrumentData.by_period[yearVal].quarters[q].months[m];
+                                if (monthData.weeks && monthData.weeks[weekVal]) {
+                                    return monthData.weeks[weekVal].by_day_of_week || null;
+                                }
+                            }
+                        }
+                    }
+                } else if (monthVal !== 'all') {
+                    // Month level
+                    if (quarterVal !== 'all') {
+                        const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
+                        return monthData.by_day_of_week || null;
+                    }
+                } else if (quarterVal !== 'all') {
+                    // Quarter level
+                    const quarterData = instrumentData.by_period[yearVal].quarters[quarterVal];
+                    return quarterData.by_day_of_week || null;
+                } else {
+                    // Year level
+                    const yearData = instrumentData.by_period[yearVal];
+                    return yearData.by_day_of_week || null;
+                }
+            } catch (e) {
+                console.error('Error getting period day-of-week data:', e);
+                return null;
+            }
+            return null;
+        }
+        
+        function displayTradingQuarterTable(tradingQuarterData) {
+            const tbody = document.getElementById('quarterTableBody');
+            if (!tbody) return;
+            
+            const quarters = [
+                { key: 'Q1 (09:30-11:30) Opening', display: 'Q1 (09:30-11:30) Opening' },
+                { key: 'Q2 (11:30-13:00) Lunch Approach', display: 'Q2 (11:30-13:00) Lunch Approach' },
+                { key: 'Q3 (13:00-14:30) Post-Lunch', display: 'Q3 (13:00-14:30) Post-Lunch' },
+                { key: 'Q4 (14:30-16:00) Close', display: 'Q4 (14:30-16:00) Close' }
+            ];
+            
+            let html = '';
+            quarters.forEach(q => {
+                const data = tradingQuarterData[q.key] || {};
+                const entries = data.trades || 0;
+                const wins = data.wins || 0;
+                const winPct = entries > 0 ? ((wins / entries) * 100).toFixed(1) : '0.0';
+                const pnl = data.pnl || 0;
+                const avgPnL = entries > 0 ? (pnl / entries).toFixed(0) : 0;
+                const totalPts = data.point_value || 0;
+                const avgPts = entries > 0 ? (totalPts / entries).toFixed(1) : 0;
+                
+                const pnlColor = pnl >= 0 ? '#a6e3a1' : '#f38ba8';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #45475a;">
+                        <td style="padding: 12px; color: #89b4fa;">${q.display}</td>
+                        <td style="padding: 12px; text-align: center; color: #cdd6f4;">${entries.toLocaleString()}</td>
+                        <td style="padding: 12px; text-align: center; color: ${winPct >= 45 ? '#a6e3a1' : '#f38ba8'};">${winPct}%</td>
+                        <td style="padding: 12px; text-align: center; color: ${pnlColor};">$${pnl.toLocaleString()}</td>
+                        <td style="padding: 12px; text-align: center; color: ${pnlColor};">$${avgPnL}</td>
+                        <td style="padding: 12px; text-align: center; color: #cdd6f4;">${totalPts.toFixed(1)}</td>
+                        <td style="padding: 12px; text-align: center; color: #cdd6f4;">${avgPts}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        function displayHourlyCharts(hourlyData) {
+            // Q1: Opening 9:30-11:30 → hours 09, 10, 11
+            displayQuarterHourlyCharts(hourlyData, 'q1', ['09:00', '10:00', '11:00'], 'Q1 Opening');
+            
+            // Q2: Lunch Approach 11:30-13:00 → hours 11, 12
+            displayQuarterHourlyCharts(hourlyData, 'q2', ['11:00', '12:00'], 'Q2 Lunch Approach');
+            
+            // Q3: Post-Lunch 13:00-14:30 → hours 13, 14
+            displayQuarterHourlyCharts(hourlyData, 'q3', ['13:00', '14:00'], 'Q3 Post-Lunch');
+            
+            // Q4: Close 14:30-16:00 → hours 14, 15, 16
+            displayQuarterHourlyCharts(hourlyData, 'q4', ['14:00', '15:00', '16:00'], 'Q4 Close');
+        }
+        
+        function displayQuarterHourlyCharts(hourlyData, quarterPrefix, hours, quarterLabel) {
+            const pnlValues = hours.map(h => hourlyData[h]?.pnl || 0);
+            const winRates = hours.map(h => hourlyData[h]?.win_pct || 0);
+            
+            // P&L Chart
+            const pnlTrace = {
+                x: hours,
+                y: pnlValues,
+                type: 'bar',
+                marker: { color: pnlValues.map(v => v >= 0 ? '#a6e3a1' : '#f38ba8') },
+                text: pnlValues.map(v => `$${v.toLocaleString()}`),
+                textposition: 'outside',
+                textfont: { size: 12, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>P&L: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const pnlLayout = {
+                title: { text: `P&L by Hour — ${quarterLabel}`, x: 0.5, xanchor: 'center', font: { size: 13 } },
+                yaxis: { title: 'Net P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot(`${quarterPrefix}HourlyPnLChart`, [pnlTrace], pnlLayout, { responsive: true });
+            
+            // Win Rate Chart
+            const winRateTrace = {
+                x: hours,
+                y: winRates,
+                type: 'bar',
+                marker: { color: winRates.map(v => v >= 45 ? '#a6e3a1' : '#f38ba8') },
+                text: winRates.map(v => `${v.toFixed(1)}%`),
+                textposition: 'outside',
+                textfont: { size: 12, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>Win Rate: %{y:.1f}%<extra></extra>'
+            };
+            
+            const winRateLayout = {
+                title: { text: `Win % by Hour — ${quarterLabel}`, x: 0.5, xanchor: 'center', font: { size: 13 } },
+                yaxis: { title: 'Win %', range: [0, 100] },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot(`${quarterPrefix}HourlyWinRateChart`, [winRateTrace], winRateLayout, { responsive: true });
+        }
+        
+        function displayDayOfWeekCharts(dayOfWeekData) {
+            const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            const pnlValues = dayOrder.map(d => {
+                const data = dayOfWeekData[d];
+                if (!data) return 0;
+                return data.pnl || 0;
+            });
+            
+            // P&L Chart
+            const pnlTrace = {
+                x: dayOrder,
+                y: pnlValues,
+                type: 'bar',
+                marker: { color: pnlValues.map(v => v >= 0 ? '#a6e3a1' : '#f38ba8') },
+                text: pnlValues.map(v => `$${v.toLocaleString()}`),
+                textposition: 'outside',
+                textfont: { size: 12, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>P&L: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const pnlLayout = {
+                title: { text: 'Net P&L $ by Day of Week', x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { title: 'Net P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('dayOfWeekWinRateChart', [pnlTrace], pnlLayout, { responsive: true });
+        }
+        
+        function displayTradingQuarterCharts(tradingQuarterData) {
+            const quarterOrder = ['Q1 Opening', 'Q2 Lunch', 'Q3 Post-Lunch', 'Q4 Close'];
+            const quarterKeys = [
+                'Q1 (09:30-11:30) Opening',
+                'Q2 (11:30-13:00) Lunch Approach',
+                'Q3 (13:00-14:30) Post-Lunch',
+                'Q4 (14:30-16:00) Close'
+            ];
+            
+            const pnlValues = quarterKeys.map(q => tradingQuarterData[q]?.pnl || 0);
+            const winRates = quarterKeys.map(q => {
+                const data = tradingQuarterData[q];
+                if (!data || !data.trades || data.trades === 0) return 0;
+                return (data.wins / data.trades) * 100;
+            });
+            
+            // P&L Chart
+            const pnlTrace = {
+                x: quarterOrder,
+                y: pnlValues,
+                type: 'bar',
+                marker: { color: pnlValues.map(v => v >= 0 ? '#a6e3a1' : '#f38ba8') },
+                text: pnlValues.map(v => `$${v.toLocaleString()}`),
+                textposition: 'outside',
+                textfont: { size: 12, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>P&L: $%{y:,.0f}<extra></extra>'
+            };
+            
+            const pnlLayout = {
+                title: { text: 'Net P&L $ by Quarter of Day', x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { title: 'Net P&L (USD)' },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('tradingQuarterPnLChart', [pnlTrace], pnlLayout, { responsive: true });
+            
+            // Win Rate Chart
+            const winRateTrace = {
+                x: quarterOrder,
+                y: winRates,
+                type: 'bar',
+                marker: { color: winRates.map(v => v >= 45 ? '#a6e3a1' : '#f38ba8') },
+                text: winRates.map(v => `${v.toFixed(1)}%`),
+                textposition: 'outside',
+                textfont: { size: 12, color: '#cdd6f4' },
+                hovertemplate: '%{x}<br>Win Rate: %{y:.1f}%<extra></extra>'
+            };
+            
+            const winRateLayout = {
+                title: { text: 'Win % by Quarter of Day', x: 0.5, xanchor: 'center', font: { size: 14 } },
+                yaxis: { title: 'Win %', range: [0, 100] },
+                xaxis: { title: '' },
+                paper_bgcolor: '#313244',
+                plot_bgcolor: '#313244',
+                font: { color: '#cdd6f4' },
+                margin: { t: 40, b: 40, l: 70, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('tradingQuarterWinRateChart', [winRateTrace], winRateLayout, { responsive: true });
+        }
+        
         function displaySampleSizeSummary() {
             const container = document.getElementById('sampleSizeSummary');
             
@@ -1717,6 +2138,8 @@
         }
         
         function displayEntryVolumeCharts(ladderData) {
+            console.log('displayEntryVolumeCharts called with ladderData:', ladderData);
+            console.log('ORH in ladderData:', ladderData['ORH']);
             const longLabels = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
             const shortLabels = ['ORL', 'DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'DL7', 'DL8', 'DL9', 'DL10'];
             
