@@ -1610,20 +1610,24 @@
                     dayOfWeekData = dayOfWeekData || (instrumentData.by_day_of_week || {});
                 }
                 
-                // Hourly data (all-time only)
-                let hourlyData = instrumentData.by_hour;
+                // Hourly data (period-specific or all-time fallback)
+                let hourlyData = getHourlyDataForPeriod(instrumentData);
                 if (currentTradeFilter === 'primary') {
-                    hourlyData = instrumentData.by_hour_directional || hourlyData;
+                    hourlyData = hourlyData || (instrumentData.by_hour_directional || {});
                 } else if (currentTradeFilter === 'reversals') {
-                    hourlyData = instrumentData.by_hour_reversals || hourlyData;
+                    hourlyData = hourlyData || (instrumentData.by_hour_reversals || {});
+                } else {
+                    hourlyData = hourlyData || (instrumentData.by_hour || {});
                 }
                 
-                // Trading quarter data (all-time only)
-                let tradingQuarterData = instrumentData.by_trading_quarter;
+                // Trading quarter data (period-specific or all-time fallback)
+                let tradingQuarterData = getTradingQuarterDataForPeriod(instrumentData);
                 if (currentTradeFilter === 'primary') {
-                    tradingQuarterData = instrumentData.by_trading_quarter_directional || tradingQuarterData;
+                    tradingQuarterData = tradingQuarterData || (instrumentData.by_trading_quarter_directional || {});
                 } else if (currentTradeFilter === 'reversals') {
-                    tradingQuarterData = instrumentData.by_trading_quarter_reversals || tradingQuarterData;
+                    tradingQuarterData = tradingQuarterData || (instrumentData.by_trading_quarter_reversals || {});
+                } else {
+                    tradingQuarterData = tradingQuarterData || (instrumentData.by_trading_quarter || {});
                 }
                 
                 // Render all charts and table
@@ -1636,7 +1640,7 @@
             }
         }
         
-        function getDayOfWeekDataForPeriod(instrumentData) {
+        function getPeriodLevelData(instrumentData, dataKey) {
             const yearVal = document.getElementById('yearSelect').value;
             const quarterVal = document.getElementById('quarterSelect').value;
             const monthVal = document.getElementById('monthSelect').value;
@@ -1651,18 +1655,18 @@
                     // Week level
                     if (monthVal !== 'all' && quarterVal !== 'all') {
                         const weekData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal].weeks[weekVal];
-                        return weekData.by_day_of_week || null;
+                        return weekData[dataKey] || null;
                     } else if (monthVal !== 'all') {
                         const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
                         if (monthData.weeks && monthData.weeks[weekVal]) {
-                            return monthData.weeks[weekVal].by_day_of_week || null;
+                            return monthData.weeks[weekVal][dataKey] || null;
                         }
                     } else if (quarterVal !== 'all') {
                         for (let q in instrumentData.by_period[yearVal].quarters) {
                             for (let m in instrumentData.by_period[yearVal].quarters[q].months) {
                                 const monthData = instrumentData.by_period[yearVal].quarters[q].months[m];
                                 if (monthData.weeks && monthData.weeks[weekVal]) {
-                                    return monthData.weeks[weekVal].by_day_of_week || null;
+                                    return monthData.weeks[weekVal][dataKey] || null;
                                 }
                             }
                         }
@@ -1671,22 +1675,34 @@
                     // Month level
                     if (quarterVal !== 'all') {
                         const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
-                        return monthData.by_day_of_week || null;
+                        return monthData[dataKey] || null;
                     }
                 } else if (quarterVal !== 'all') {
                     // Quarter level
                     const quarterData = instrumentData.by_period[yearVal].quarters[quarterVal];
-                    return quarterData.by_day_of_week || null;
+                    return quarterData[dataKey] || null;
                 } else {
                     // Year level
                     const yearData = instrumentData.by_period[yearVal];
-                    return yearData.by_day_of_week || null;
+                    return yearData[dataKey] || null;
                 }
             } catch (e) {
-                console.error('Error getting period day-of-week data:', e);
+                console.error(`Error getting period ${dataKey} data:`, e);
                 return null;
             }
             return null;
+        }
+        
+        function getDayOfWeekDataForPeriod(instrumentData) {
+            return getPeriodLevelData(instrumentData, 'by_day_of_week');
+        }
+        
+        function getHourlyDataForPeriod(instrumentData) {
+            return getPeriodLevelData(instrumentData, 'by_hour');
+        }
+        
+        function getTradingQuarterDataForPeriod(instrumentData) {
+            return getPeriodLevelData(instrumentData, 'by_trading_quarter');
         }
         
         function displayTradingQuarterTable(tradingQuarterData) {
