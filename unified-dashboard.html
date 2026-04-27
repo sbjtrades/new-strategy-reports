@@ -388,86 +388,25 @@
         <div id="time-patterns" class="tab-content">
             <div style="padding: 20px;">
                 <!-- Day of Week Performance (TOP) -->
-                <div class="section-header">📅 WIN % BY DAY OF WEEK</div>
+                <div class="section-header">📅 NET P&L $ BY DAY OF WEEK</div>
                 <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px 0;">
                     <div>
                         <div id="dayOfWeekWinRateChart" style="height: 400px;"></div>
                     </div>
                 </div>
                 
-                <!-- Hourly Performance Grouped by Quarter -->
-                <div class="section-header" style="margin-top: 50px;">⏰ HOURLY PERFORMANCE BY TRADING SESSION QUARTER</div>
-                
-                <!-- Q1: Opening 9:30-11:30 -->
-                <div style="margin: 30px 0;">
-                    <div class="chart-subtitle">Q1 Opening (9:30-11:30)</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
-                            <div id="q1HourlyPnLChart" style="height: 350px;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
-                            <div id="q1HourlyWinRateChart" style="height: 350px;"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Q2: Lunch Approach 11:30-13:00 -->
-                <div style="margin: 30px 0;">
-                    <div class="chart-subtitle">Q2 Lunch Approach (11:30-13:00)</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
-                            <div id="q2HourlyPnLChart" style="height: 350px;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
-                            <div id="q2HourlyWinRateChart" style="height: 350px;"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Q3: Post-Lunch 13:00-14:30 -->
-                <div style="margin: 30px 0;">
-                    <div class="chart-subtitle">Q3 Post-Lunch (13:00-14:30)</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
-                            <div id="q3HourlyPnLChart" style="height: 350px;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
-                            <div id="q3HourlyWinRateChart" style="height: 350px;"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Q4: Close 14:30-16:00 -->
-                <div style="margin: 30px 0;">
-                    <div class="chart-subtitle">Q4 Close (14:30-16:00)</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L by Hour</div>
-                            <div id="q4HourlyPnLChart" style="height: 350px;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % by Hour</div>
-                            <div id="q4HourlyWinRateChart" style="height: 350px;"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Day of Week Performance -->
-                <div class="section-header" style="margin-top: 50px;">📅 WIN % BY DAY OF WEEK</div>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px 0;">
+                <!-- Trading Session Quarters Breakdown -->
+                <div class="section-header" style="margin-top: 50px;">📊 TRADING SESSION QUARTERS</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 30px 0;">
                     <div>
-                        <div id="dayOfWeekWinRateChart" style="height: 400px;"></div>
+                        <div class="chart-subtitle">Win % by Quarter</div>
+                        <div id="tradingQuarterWinRateChart" style="height: 400px;"></div>
+                    </div>
+                    <div>
+                        <div class="chart-subtitle">Net P&L $ by Quarter</div>
+                        <div id="tradingQuarterPnLChart" style="height: 400px;"></div>
                     </div>
                 </div>
-                
-                <!-- Trading Session Quarters -->
-                <div class="section-header" style="margin-top: 50px;">📊 TRADING SESSION QUARTERS — COMPLETE BREAKDOWN</div>
                 
                 <!-- Quarters Table -->
                 <div style="background: #313244; padding: 20px; border-radius: 8px; border: 1px solid #45475a; margin-bottom: 30px; overflow-x: auto;">
@@ -488,15 +427,111 @@
                     </table>
                 </div>
                 
-                <!-- Quarters Charts -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 30px 0;">
-                    <div>
-                        <div class="chart-subtitle">Win % by Quarter of Day</div>
-                        <div id="tradingQuarterWinRateChart" style="height: 400px;"></div>
+                <!-- Individual Hour Breakdown -->
+                <div class="section-header" style="margin-top: 50px;">⏰ HOURLY BREAKDOWN (Each Hour Separate)</div>
+                
+                <!-- 9:30-10:00 (ANOMALY) -->
+                <div style="margin: 30px 0; background: #45475a30; padding: 20px; border-left: 4px solid #f38ba8; border-radius: 4px;">
+                    <div class="chart-subtitle" style="color: #f38ba8;">🚨 9:30-10:00 AM (ANOMALY HOUR)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour0930Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour0930StatsChart" style="height: 300px;"></div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="chart-subtitle">Net P&L $ by Quarter of Day</div>
-                        <div id="tradingQuarterPnLChart" style="height: 400px;"></div>
+                </div>
+                
+                <!-- 10:00-11:00 -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">10:00-11:00 AM</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour1000Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour1000StatsChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 11:00-12:00 -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">11:00-12:00 PM</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour1100Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour1100StatsChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 12:00-1:00 PM -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">12:00-1:00 PM</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour1200Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour1200StatsChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 1:00-2:00 PM -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">1:00-2:00 PM</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour1300Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour1300StatsChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 2:00-3:00 PM -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">2:00-3:00 PM</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour1400Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour1400StatsChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3:00-4:00 PM -->
+                <div style="margin: 30px 0;">
+                    <div class="chart-subtitle">3:00-4:00 PM</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">P&L</div>
+                            <div id="hour1500Chart" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85em; color: #89b4fa; margin-bottom: 10px;">Win % & Trades</div>
+                            <div id="hour1500StatsChart" style="height: 300px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1724,8 +1759,8 @@
             const quarters = [
                 { key: 'Q1 (09:30-11:30) Opening', display: 'Q1 (09:30-11:30) Opening' },
                 { key: 'Q2 (11:30-13:00) Lunch Approach', display: 'Q2 (11:30-13:00) Lunch Approach' },
-                { key: 'Q3 (13:00-14:30) Post-Lunch', display: 'Q3 (13:00-14:30) Post-Lunch' },
-                { key: 'Q4 (14:30-16:00) Close', display: 'Q4 (14:30-16:00) Close' }
+                { key: 'Q3 (13:00-15:00) Post-Lunch', display: 'Q3 (13:00-15:00) Post-Lunch' },
+                { key: 'Q4 (15:00-16:00) Close', display: 'Q4 (15:00-16:00) Close' }
             ];
             
             let html = '';
@@ -1758,72 +1793,75 @@
         }
         
         function displayHourlyCharts(hourlyData) {
-            // Q1: Opening 9:30-11:30 → hours 09, 10, 11
-            displayQuarterHourlyCharts(hourlyData, 'q1', ['09:00', '10:00', '11:00'], 'Q1 Opening');
+            // Individual hour breakdown
+            const hoursList = [
+                { key: '09:30', chartId: 'hour0930', display: '9:30-10:00' },
+                { key: '10:00', chartId: 'hour1000', display: '10:00-11:00' },
+                { key: '11:00', chartId: 'hour1100', display: '11:00-12:00' },
+                { key: '12:00', chartId: 'hour1200', display: '12:00-1:00 PM' },
+                { key: '13:00', chartId: 'hour1300', display: '1:00-2:00 PM' },
+                { key: '14:00', chartId: 'hour1400', display: '2:00-3:00 PM' },
+                { key: '15:00', chartId: 'hour1500', display: '3:00-4:00 PM' }
+            ];
             
-            // Q2: Lunch Approach 11:30-13:00 → hours 11, 12
-            displayQuarterHourlyCharts(hourlyData, 'q2', ['11:00', '12:00'], 'Q2 Lunch Approach');
-            
-            // Q3: Post-Lunch 13:00-14:30 → hours 13, 14
-            displayQuarterHourlyCharts(hourlyData, 'q3', ['13:00', '14:00'], 'Q3 Post-Lunch');
-            
-            // Q4: Close 14:30-16:00 → hours 14, 15, 16
-            displayQuarterHourlyCharts(hourlyData, 'q4', ['14:00', '15:00', '16:00'], 'Q4 Close');
+            hoursList.forEach(hour => {
+                const data = hourlyData[hour.key] || {};
+                displayIndividualHourChart(data, hour.chartId, hour.key);
+            });
         }
         
-        function displayQuarterHourlyCharts(hourlyData, quarterPrefix, hours, quarterLabel) {
-            const pnlValues = hours.map(h => hourlyData[h]?.pnl || 0);
-            const winRates = hours.map(h => hourlyData[h]?.win_pct || 0);
+        function displayIndividualHourChart(data, chartId, hourKey) {
+            const pnl = data.pnl || 0;
+            const trades = data.trades || 0;
+            const winPct = data.win_pct || 0;
             
-            // P&L Chart
+            // P&L Chart (single bar)
             const pnlTrace = {
-                x: hours,
-                y: pnlValues,
+                x: [hourKey],
+                y: [pnl],
                 type: 'bar',
-                marker: { color: pnlValues.map(v => v >= 0 ? '#a6e3a1' : '#f38ba8') },
-                text: pnlValues.map(v => `$${v.toLocaleString()}`),
+                marker: { color: pnl >= 0 ? '#a6e3a1' : '#f38ba8' },
+                text: [`$${pnl.toLocaleString()}`],
                 textposition: 'outside',
                 textfont: { size: 12, color: '#cdd6f4' },
-                hovertemplate: '%{x}<br>P&L: $%{y:,.0f}<extra></extra>'
+                hovertemplate: 'P&L: $%{y:,.0f}<extra></extra>'
             };
             
             const pnlLayout = {
-                title: { text: `P&L by Hour — ${quarterLabel}`, x: 0.5, xanchor: 'center', font: { size: 13 } },
                 yaxis: { title: 'Net P&L (USD)' },
                 xaxis: { title: '' },
                 paper_bgcolor: '#313244',
                 plot_bgcolor: '#313244',
                 font: { color: '#cdd6f4' },
-                margin: { t: 40, b: 40, l: 70, r: 20 },
+                margin: { t: 20, b: 20, l: 70, r: 20 },
                 showlegend: false
             };
             
-            Plotly.newPlot(`${quarterPrefix}HourlyPnLChart`, [pnlTrace], pnlLayout, { responsive: true });
+            Plotly.newPlot(`${chartId}Chart`, [pnlTrace], pnlLayout, { responsive: true });
             
-            // Win Rate Chart
-            const winRateTrace = {
-                x: hours,
-                y: winRates,
+            // Win % & Trades Chart
+            const statsTrace = {
+                x: ['Win %', 'Trades'],
+                y: [winPct, trades],
                 type: 'bar',
-                marker: { color: winRates.map(v => v >= 45 ? '#a6e3a1' : '#f38ba8') },
-                text: winRates.map(v => `${v.toFixed(1)}%`),
+                marker: { color: ['#a6e3a1', '#89b4fa'] },
+                text: [`${winPct.toFixed(1)}%`, trades.toString()],
                 textposition: 'outside',
                 textfont: { size: 12, color: '#cdd6f4' },
-                hovertemplate: '%{x}<br>Win Rate: %{y:.1f}%<extra></extra>'
+                hovertemplate: '%{x}: %{y:.1f}<extra></extra>'
             };
             
-            const winRateLayout = {
-                title: { text: `Win % by Hour — ${quarterLabel}`, x: 0.5, xanchor: 'center', font: { size: 13 } },
-                yaxis: { title: 'Win %', range: [0, 100] },
+            const statsLayout = {
+                yaxis: { title: 'Value' },
                 xaxis: { title: '' },
                 paper_bgcolor: '#313244',
                 plot_bgcolor: '#313244',
                 font: { color: '#cdd6f4' },
-                margin: { t: 40, b: 40, l: 70, r: 20 },
+                margin: { t: 20, b: 20, l: 70, r: 20 },
                 showlegend: false
             };
             
-            Plotly.newPlot(`${quarterPrefix}HourlyWinRateChart`, [winRateTrace], winRateLayout, { responsive: true });
+            Plotly.newPlot(`${chartId}StatsChart`, [statsTrace], statsLayout, { responsive: true });
         }
         
         function displayDayOfWeekCharts(dayOfWeekData) {
@@ -1866,8 +1904,8 @@
             const quarterKeys = [
                 'Q1 (09:30-11:30) Opening',
                 'Q2 (11:30-13:00) Lunch Approach',
-                'Q3 (13:00-14:30) Post-Lunch',
-                'Q4 (14:30-16:00) Close'
+                'Q3 (13:00-15:00) Post-Lunch',
+                'Q4 (15:00-16:00) Close'
             ];
             
             const pnlValues = quarterKeys.map(q => tradingQuarterData[q]?.pnl || 0);
