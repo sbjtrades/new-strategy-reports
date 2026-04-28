@@ -741,6 +741,11 @@
             if (document.getElementById('pnl').classList.contains('active')) {
                 updatePnLTab();
             }
+            
+            // If Time & Day Patterns tab is currently visible, update it too
+            if (document.getElementById('time-patterns').classList.contains('active')) {
+                displayTimePatterns();
+            }
         }
         
         function displayPeriodSummary(summary, label, filteredLadderData) {
