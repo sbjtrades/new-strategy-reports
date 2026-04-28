@@ -495,7 +495,55 @@
         
         <!-- TRADE ANALYSIS TAB -->
         <div id="trade-analysis" class="tab-content">
-            <div class="error">Trade Analysis Tab — Coming Soon</div>
+            <!-- Summary Cards -->
+            <div id="taSummaryCards" style="margin-bottom:30px;"></div>
+            <!-- Key Takeaways -->
+            <div id="taKeyTakeaways" style="margin-bottom:30px;"></div>
+            <!-- Longs vs Shorts -->
+            <div class="section-header">↕ LONGS VS SHORTS — STRATEGY ASYMMETRY</div>
+            <div id="taLongShortCards" style="margin-bottom:30px;"></div>
+            <div id="taLongShortTakeaways" style="margin-bottom:30px;"></div>
+            <!-- Equity + Drawdown + Daily P&L Chart -->
+            <div class="section-header" style="margin-top:20px;">📉 EQUITY CURVE &amp; DRAWDOWN — DAILY VIEW</div>
+            <div class="chart-container" style="margin-bottom:30px;">
+                <div id="taEquityChart" style="height:420px;"></div>
+            </div>
+            <!-- Streak Analysis -->
+            <div class="section-header" style="margin-top:20px;">🔁 STREAK ANALYSIS — CONSECUTIVE WINS &amp; LOSSES</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div id="taWinStreakChart"></div>
+                <div id="taLossStreakChart"></div>
+            </div>
+            <!-- P&L Distribution -->
+            <div class="section-header" style="margin-top:20px;">📊 P&amp;L DISTRIBUTION — SHAPE OF WINS VS LOSSES</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div id="taPnLBoxChart"></div>
+                <div id="taDurBoxChart"></div>
+            </div>
+            <!-- Duration by Ladder -->
+            <div class="section-header" style="margin-top:20px;">⏱ TRADE DURATION BY LADDER — UPPER VS LOWER</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div id="taDurULChart"></div>
+                <div id="taDurDLChart"></div>
+            </div>
+            <!-- Consecutive Loss Risk by Ladder -->
+            <div class="section-header" style="margin-top:20px;">⚠️ CONSECUTIVE LOSS RISK BY LADDER — PER-RUNG ISOLATED</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div id="taConsecLossULChart"></div>
+                <div id="taConsecLossDLChart"></div>
+            </div>
+            <!-- Consecutive Loss Risk by Setup -->
+            <div class="section-header" style="margin-top:20px;">⚠️ CONSECUTIVE LOSS RISK BY SETUP</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div id="taConsecSetupOverallChart"></div>
+                <div id="taConsecSetupULDLChart"></div>
+            </div>
+            <!-- Best & Worst Days -->
+            <div class="section-header" style="margin-top:20px;">🏆 BEST &amp; WORST TRADING DAYS</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+                <div id="taBestDaysChart"></div>
+                <div id="taWorstDaysChart"></div>
+            </div>
         </div>
     </div>
     
@@ -562,6 +610,8 @@
                 displayTimePatterns();
             } else if (tabId === 'risk-reward') {
                 displayRiskReward();
+            } else if (tabId === 'trade-analysis') {
+                displayTradeAnalysis();
             }
         }
         
@@ -766,6 +816,11 @@
             // If Risk & Reward tab is currently visible, update it too
             if (document.getElementById('risk-reward').classList.contains('active')) {
                 displayRiskReward();
+            }
+
+            // If Trade Analysis tab is currently visible, update it too
+            if (document.getElementById('trade-analysis').classList.contains('active')) {
+                displayTradeAnalysis();
             }
         }
         
@@ -1924,6 +1979,342 @@
             } catch(e) {
                 console.error('Error in displayRiskReward:', e);
                 document.getElementById('rrKeyTakeaways').innerHTML = `<div class="error">Error loading Risk & Reward: ${e.message}</div>`;
+            }
+        }
+
+        function displayTradeAnalysis() {
+            try {
+                const ta = dashboardData.instruments[currentInstrument].trade_analysis;
+                if (!ta) {
+                    document.getElementById('taSummaryCards').innerHTML = '<div class="error">No Trade Analysis data available.</div>';
+                    return;
+                }
+
+                const fmt$ = v => '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+                const fmtSign$ = v => (v >= 0 ? '+' : '') + '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+                const cardStyle = (c) => `background:#313244;border-radius:8px;padding:14px 12px;border-top:3px solid ${c};text-align:center;`;
+                const valStyle = (c, sz='1.7em') => `font-size:${sz};font-weight:bold;color:${c};margin-bottom:3px;`;
+                const lbl = `font-size:0.72em;color:#7f849c;text-transform:uppercase;letter-spacing:0.5px;`;
+
+                // ── SUMMARY CARDS ─────────────────────────────────────────────
+                document.getElementById('taSummaryCards').innerHTML = `
+                    <div style="margin-bottom:10px;font-size:0.8em;color:#7f849c;text-transform:uppercase;letter-spacing:1px;">OVERALL TRADE ANALYSIS</div>
+                    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
+                        <div style="${cardStyle('#a6e3a1')}"><div style="${valStyle('#a6e3a1')}">${ta.max_win_streak}</div><div style="${lbl}">Max Win Streak</div></div>
+                        <div style="${cardStyle('#f38ba8')}"><div style="${valStyle('#f38ba8')}">${ta.max_loss_streak}</div><div style="${lbl}">Max Loss Streak</div></div>
+                        <div style="${cardStyle('#89b4fa')}"><div style="${valStyle('#89b4fa')}">${ta.avg_win_streak}</div><div style="${lbl}">Avg Win Streak</div></div>
+                        <div style="${cardStyle('#cba6f7')}"><div style="${valStyle('#cba6f7')}">${ta.avg_loss_streak}</div><div style="${lbl}">Avg Loss Streak</div></div>
+                        <div style="${cardStyle('#94e2d5')}"><div style="${valStyle('#94e2d5')}">${ta.avg_win_duration_min}m</div><div style="${lbl}">Avg Win Duration</div></div>
+                        <div style="${cardStyle('#f38ba8')}"><div style="${valStyle('#f38ba8')}">${ta.avg_loss_duration_min}m</div><div style="${lbl}">Avg Loss Duration</div></div>
+                        <div style="${cardStyle('#a6e3a1')}"><div style="${valStyle('#a6e3a1')}">${fmt$(ta.largest_win)}</div><div style="${lbl}">Largest Win</div></div>
+                        <div style="${cardStyle('#f38ba8')}"><div style="${valStyle('#f38ba8')}">-${fmt$(Math.abs(ta.largest_loss))}</div><div style="${lbl}">Largest Loss</div></div>
+                        <div style="${cardStyle('#a6e3a1')}"><div style="${valStyle('#a6e3a1')}">${fmt$(ta.best_day)}</div><div style="${lbl}">Best Day</div></div>
+                        <div style="${cardStyle('#f38ba8')}"><div style="${valStyle('#f38ba8')}">-${fmt$(Math.abs(ta.worst_day))}</div><div style="${lbl}">Worst Day</div></div>
+                        <div style="${cardStyle('#f38ba8')}"><div style="${valStyle('#f38ba8')}">-${fmt$(Math.abs(ta.max_drawdown))}</div><div style="${lbl}">Max Drawdown</div></div>
+                        <div style="${cardStyle('#89b4fa')}"><div style="${valStyle('#89b4fa')}">${ta.avg_recovery_trades}</div><div style="${lbl}">Avg Recovery Trades</div></div>
+                    </div>`;
+
+                // ── KEY TAKEAWAYS ─────────────────────────────────────────────
+                const longsMoreProfit = ta.longs.total_pnl > ta.shorts.total_pnl;
+                const pnlDiff = Math.abs(ta.longs.total_pnl - ta.shorts.total_pnl);
+                document.getElementById('taKeyTakeaways').innerHTML = `
+                    <div class="key-takeaways" style="border-left-color:#89b4fa;">
+                        <h3>📋 KEY TAKEAWAYS — TRADE ANALYSIS</h3>
+                        <ul>
+                            <li>Max consecutive wins: <strong>${ta.max_win_streak}</strong> in a row · avg win streak: <strong>${ta.avg_win_streak}</strong> trades.</li>
+                            <li>Max consecutive losses: <strong>${ta.max_loss_streak}</strong> in a row · avg loss streak: <strong>${ta.avg_loss_streak}</strong> trades.</li>
+                            <li>Largest single win: <strong>${fmt$(ta.largest_win)}</strong> · Largest single loss: <strong>-${fmt$(Math.abs(ta.largest_loss))}</strong>.</li>
+                            <li>Max drawdown (peak-to-trough): <strong>-${fmt$(Math.abs(ta.max_drawdown))}</strong> · Avg recovery: <strong>${ta.avg_recovery_trades}</strong> trades to return to equity peak.</li>
+                            <li>Avg trade duration: Wins avg <strong>${ta.avg_win_duration_min} min</strong> · Losses avg <strong>${ta.avg_loss_duration_min} min</strong>.</li>
+                            <li>Best single day: <strong>${fmt$(ta.best_day)}</strong> (${ta.best_day_date}) · Worst single day: <strong>-${fmt$(Math.abs(ta.worst_day))}</strong> (${ta.worst_day_date}).</li>
+                            <li>Per-rung consecutive loss counts are <strong>isolated</strong> — only that ladder's own trades are counted. The banner Max Loss Streak (${ta.max_loss_streak}) reflects consecutive losses across <strong>all trades globally</strong>.</li>
+                        </ul>
+                    </div>`;
+
+                // ── LONGS VS SHORTS CARDS ──────────────────────────────────────
+                const dirRow = (d, label, accentColor) => `
+                    <div style="display:flex;align-items:center;gap:15px;background:#313244;border-radius:8px;padding:15px 20px;border-left:5px solid ${accentColor};margin-bottom:15px;">
+                        <div style="font-size:1.3em;font-weight:bold;color:${accentColor};min-width:80px;">${label}</div>
+                        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;flex:1;">
+                            <div style="text-align:center;"><div style="${valStyle('#cdd6f4','1.4em')}">${d.trades.toLocaleString()}</div><div style="${lbl}">Total Trades</div></div>
+                            <div style="text-align:center;"><div style="${valStyle('#89b4fa','1.4em')}">${d.win_pct}%</div><div style="${lbl}">Win Rate</div></div>
+                            <div style="text-align:center;"><div style="${valStyle(d.total_pnl>=0?'#a6e3a1':'#f38ba8','1.4em')}">${fmt$(d.total_pnl)}</div><div style="${lbl}">Total P&L</div></div>
+                            <div style="text-align:center;"><div style="${valStyle('#a6e3a1','1.4em')}">${fmt$(d.gross_wins)}</div><div style="${lbl}">Gross Wins</div></div>
+                            <div style="text-align:center;"><div style="${valStyle('#f38ba8','1.4em')}">${fmt$(d.gross_losses)}</div><div style="${lbl}">Gross Losses</div></div>
+                            <div style="text-align:center;"><div style="${valStyle('#94e2d5','1.4em')}">${fmtSign$(d.avg_pnl_per_trade)}</div><div style="${lbl}">Avg P&L/Trade</div></div>
+                        </div>
+                    </div>`;
+                document.getElementById('taLongShortCards').innerHTML =
+                    dirRow(ta.longs, 'LONGS', '#a6e3a1') +
+                    dirRow(ta.shorts, 'SHORTS', '#f38ba8');
+
+                // ── LONGS VS SHORTS KEY TAKEAWAYS ─────────────────────────────
+                const winnerDir = longsMoreProfit ? 'LONGS' : 'SHORTS';
+                const winnerData = longsMoreProfit ? ta.longs : ta.shorts;
+                const loserData = longsMoreProfit ? ta.shorts : ta.longs;
+                document.getElementById('taLongShortTakeaways').innerHTML = `
+                    <div class="key-takeaways" style="border-left-color:#cba6f7;">
+                        <h3>↕ LONGS VS SHORTS — KEY TAKEAWAYS</h3>
+                        <ul>
+                            <li><strong>${winnerDir}</strong> generate $${Math.abs(pnlDiff).toLocaleString('en-US',{maximumFractionDigits:0})} more profit · ${ta.longs.trades.toLocaleString()} longs vs ${ta.shorts.trades.toLocaleString()} shorts.</li>
+                            <li>Win rate disparity: Longs <strong>${ta.longs.win_pct}%</strong> vs Shorts <strong>${ta.shorts.win_pct}%</strong> (${Math.abs(ta.longs.win_pct - ta.shorts.win_pct).toFixed(1)}pp difference).</li>
+                            <li>Longs gross wins: <strong>${fmt$(ta.longs.gross_wins)}</strong> · Longs gross losses: <strong>${fmt$(Math.abs(ta.longs.gross_losses))}</strong>.</li>
+                            <li>Shorts gross wins: <strong>${fmt$(ta.shorts.gross_wins)}</strong> · Shorts gross losses: <strong>${fmt$(Math.abs(ta.shorts.gross_losses))}</strong>.</li>
+                            <li>Avg P&L per trade — Longs: <strong>${fmtSign$(ta.longs.avg_pnl_per_trade)}</strong> vs Shorts: <strong>${fmtSign$(ta.shorts.avg_pnl_per_trade)}</strong>.</li>
+                        </ul>
+                    </div>`;
+
+                // ── EQUITY + DRAWDOWN + DAILY P&L CHART ──────────────────────
+                // Layout: daily P&L green/red bars (y1), equity curve teal line (y1), drawdown red bars DOWN (y2 negative)
+                const curve = ta.daily_curve;
+                const dates = curve.map(r => r.trade_date);
+                const dailyPnls = curve.map(r => r.daily_pnl);
+                const cumPnls = curve.map(r => r.end_cum_pnl);
+                const drawdowns = curve.map(r => r.min_drawdown); // already negative
+
+                Plotly.newPlot('taEquityChart', [
+                    {
+                        name: 'Daily P&L',
+                        x: dates,
+                        y: dailyPnls,
+                        type: 'bar',
+                        yaxis: 'y',
+                        marker: { color: dailyPnls.map(v => v >= 0 ? 'rgba(166,227,161,0.55)' : 'rgba(243,139,168,0.55)') },
+                        hovertemplate: '%{x}<br>Daily P&L: $%{y:,.0f}<extra></extra>',
+                    },
+                    {
+                        name: 'Equity Curve',
+                        x: dates,
+                        y: cumPnls,
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y',
+                        line: { color: '#94e2d5', width: 2.5 },
+                        hovertemplate: '%{x}<br>Cum. Equity: $%{y:,.0f}<extra></extra>',
+                    },
+                    {
+                        name: 'Drawdown',
+                        x: dates,
+                        y: drawdowns,
+                        type: 'bar',
+                        yaxis: 'y2',
+                        marker: { color: 'rgba(243,139,168,0.75)' },
+                        hovertemplate: '%{x}<br>Drawdown: $%{y:,.0f}<extra></extra>',
+                    }
+                ], {
+                    paper_bgcolor: '#313244',
+                    plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 30, b: 50, l: 80, r: 80 },
+                    barmode: 'overlay',
+                    legend: { x: 0.01, y: 0.99, bgcolor: 'rgba(49,50,68,0.85)' },
+                    xaxis: { gridcolor: '#45475a', title: '' },
+                    yaxis: {
+                        title: 'Cumulative P&L ($)',
+                        gridcolor: '#45475a',
+                        side: 'left',
+                        tickformat: '$,.0f',
+                    },
+                    yaxis2: {
+                        title: 'Drawdown ($ from Peak)',
+                        overlaying: 'y',
+                        side: 'right',
+                        tickformat: '$,.0f',
+                        gridcolor: 'transparent',
+                        autorange: true,
+                    },
+                    shapes: [{
+                        type: 'line', x0: dates[0], x1: dates[dates.length-1],
+                        y0: 0, y1: 0, yref: 'y',
+                        line: { color: '#6c7086', width: 1, dash: 'dot' }
+                    }]
+                }, { responsive: true });
+
+                // ── STREAK HISTOGRAMS ─────────────────────────────────────────
+                const plotStreak = (elId, hist, maxStreak, avgStreak, color, title) => {
+                    const maxKey = Math.max(...Object.keys(hist).map(Number));
+                    const xs = Array.from({length: maxKey}, (_, i) => i + 1);
+                    const ys = xs.map(k => hist[String(k)] || 0);
+                    Plotly.newPlot(elId, [{
+                        x: xs, y: ys, type: 'bar',
+                        marker: { color },
+                        text: ys.map(v => v > 0 ? v : ''),
+                        textposition: 'outside',
+                        textfont: { size: 10, color: '#cdd6f4' },
+                        hovertemplate: '%{x} in a row: %{y} times<extra></extra>'
+                    }], {
+                        title: { text: `${title}  (Max: ${maxStreak} · Avg: ${avgStreak})`, x: 0.5, xanchor: 'center', font: { size: 12 } },
+                        paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                        font: { color: '#cdd6f4' },
+                        margin: { t: 40, b: 50, l: 50, r: 20 },
+                        xaxis: { title: title.includes('Win') ? 'Consecutive Wins' : 'Consecutive Losses', dtick: 1, gridcolor: '#45475a' },
+                        yaxis: { title: 'Occurrences', gridcolor: '#45475a' }
+                    }, { responsive: true });
+                };
+                plotStreak('taWinStreakChart', ta.win_streak_histogram, ta.max_win_streak, ta.avg_win_streak, '#94e2d5', 'Win Streaks');
+                plotStreak('taLossStreakChart', ta.loss_streak_histogram, ta.max_loss_streak, ta.avg_loss_streak, '#f38ba8', 'Loss Streaks');
+
+                // ── P&L DISTRIBUTION BOX PLOTS ────────────────────────────────
+                const pnlWinMedian = [...ta.win_pnl_distribution].sort((a,b)=>a-b)[Math.floor(ta.win_pnl_distribution.length/2)] || 0;
+                const pnlLossMedian = [...ta.loss_pnl_distribution].sort((a,b)=>a-b)[Math.floor(ta.loss_pnl_distribution.length/2)] || 0;
+                Plotly.newPlot('taPnLBoxChart', [
+                    { y: ta.win_pnl_distribution, name: `Wins (${ta.win_pnl_distribution.length.toLocaleString()})`, type: 'box', boxpoints: 'outliers', marker: { color: '#94e2d5', size: 3 }, line: { color: '#94e2d5' }, fillcolor: 'rgba(148,226,213,0.25)' },
+                    { y: ta.loss_pnl_distribution, name: `Losses (${ta.loss_pnl_distribution.length.toLocaleString()})`, type: 'box', boxpoints: 'outliers', marker: { color: '#f38ba8', size: 3 }, line: { color: '#f38ba8' }, fillcolor: 'rgba(243,139,168,0.25)' }
+                ], {
+                    title: { text: `P&L Distribution  (Win median: ${fmt$(pnlWinMedian)} · Loss median: ${fmt$(pnlLossMedian)})`, x: 0.5, xanchor: 'center', font: { size: 12 } },
+                    paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 40, b: 30, l: 70, r: 20 },
+                    yaxis: { title: 'P&L $', gridcolor: '#45475a', tickformat: '$,.0f' },
+                    shapes: [{ type: 'line', x0: -0.5, x1: 1.5, y0: 0, y1: 0, line: { color: '#6c7086', width: 1, dash: 'dot' } }]
+                }, { responsive: true });
+
+                // ── DURATION BOX PLOTS ────────────────────────────────────────
+                const winDurAvg = ta.avg_win_duration_min;
+                const lossDurAvg = ta.avg_loss_duration_min;
+                Plotly.newPlot('taDurBoxChart', [
+                    { y: ta.win_duration_distribution.map(v => Math.min(v, 120)), name: 'Wins', type: 'box', boxpoints: 'outliers', marker: { color: '#94e2d5', size: 3 }, line: { color: '#94e2d5' }, fillcolor: 'rgba(148,226,213,0.25)' },
+                    { y: ta.loss_duration_distribution.map(v => Math.min(v, 120)), name: 'Losses', type: 'box', boxpoints: 'outliers', marker: { color: '#f38ba8', size: 3 }, line: { color: '#f38ba8' }, fillcolor: 'rgba(243,139,168,0.25)' }
+                ], {
+                    title: { text: `Trade Duration  (Wins avg: ${winDurAvg}m · Losses avg: ${lossDurAvg}m)`, x: 0.5, xanchor: 'center', font: { size: 12 } },
+                    paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 40, b: 30, l: 70, r: 20 },
+                    yaxis: { title: 'Minutes (capped 120)', gridcolor: '#45475a' }
+                }, { responsive: true });
+
+                // ── DURATION BY LADDER (horizontal bars) ─────────────────────
+                const ladderSort = k => k === 'ORH' ? 0 : k === 'ORL' ? 100 : k.startsWith('UL') ? parseInt(k.slice(2)) : k.startsWith('DL') ? 100 + parseInt(k.slice(2)) : 999;
+                const durEntries = Object.entries(ta.duration_by_ladder).sort((a,b) => ladderSort(a[0]) - ladderSort(b[0]));
+                const ulDur = durEntries.filter(([k]) => k === 'ORH' || k.startsWith('UL'));
+                const dlDur = durEntries.filter(([k]) => k === 'ORL' || k.startsWith('DL'));
+
+                const plotDurLadder = (elId, data, title) => {
+                    const labels = data.map(([k]) => k);
+                    const wins = data.map(([, v]) => v.avg_win_dur || 0);
+                    const losses = data.map(([, v]) => v.avg_loss_dur || 0);
+                    const winText = wins.map(v => v ? v.toFixed(1) + 'm' : '');
+                    const lossText = losses.map(v => v ? v.toFixed(1) + 'm' : '');
+                    Plotly.newPlot(elId, [
+                        { y: labels, x: wins, name: 'Wins', type: 'bar', orientation: 'h', marker: { color: '#94e2d5' }, text: winText, textposition: 'outside', textfont: { size: 9, color: '#cdd6f4' }, hovertemplate: '%{y}: %{x:.1f}m<extra>Wins</extra>' },
+                        { y: labels, x: losses, name: 'Losses', type: 'bar', orientation: 'h', marker: { color: '#f38ba8' }, text: lossText, textposition: 'outside', textfont: { size: 9, color: '#cdd6f4' }, hovertemplate: '%{y}: %{x:.1f}m<extra>Losses</extra>' }
+                    ], {
+                        title: { text: title, x: 0.5, xanchor: 'center', font: { size: 12 } },
+                        barmode: 'group',
+                        paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                        font: { color: '#cdd6f4' },
+                        margin: { t: 40, b: 40, l: 55, r: 60 },
+                        xaxis: { title: 'Minutes', gridcolor: '#45475a' },
+                        yaxis: { gridcolor: '#45475a', autorange: 'reversed' },
+                        legend: { x: 0.7, y: 0.02, bgcolor: 'rgba(49,50,68,0.8)' }
+                    }, { responsive: true });
+                };
+                plotDurLadder('taDurULChart', ulDur, 'Avg Duration — Upper Ladders (UL)');
+                plotDurLadder('taDurDLChart', dlDur, 'Avg Duration — Lower Ladders (DL)');
+
+                // ── CONSECUTIVE LOSS BY LADDER (horizontal bars, per-rung) ────
+                const clEntries = Object.entries(ta.consec_loss_by_ladder).sort((a,b) => ladderSort(a[0]) - ladderSort(b[0]));
+                const ulCL = clEntries.filter(([k]) => k === 'ORH' || k.startsWith('UL'));
+                const dlCL = clEntries.filter(([k]) => k === 'ORL' || k.startsWith('DL'));
+
+                const plotCLLadder = (elId, data, title) => {
+                    const labels = data.map(([k]) => k);
+                    const vals = data.map(([, v]) => v);
+                    Plotly.newPlot(elId, [{
+                        y: labels, x: vals, type: 'bar', orientation: 'h',
+                        marker: { color: '#fab387' },
+                        text: vals.map(v => v),
+                        textposition: 'outside',
+                        textfont: { size: 10, color: '#cdd6f4' },
+                        hovertemplate: '%{y}<br>Max Consec. Losses: %{x}<extra></extra>'
+                    }], {
+                        title: { text: title, x: 0.5, xanchor: 'center', font: { size: 12 } },
+                        paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                        font: { color: '#cdd6f4' },
+                        margin: { t: 40, b: 40, l: 55, r: 40 },
+                        xaxis: { title: 'Max Consec. Losses', gridcolor: '#45475a' },
+                        yaxis: { gridcolor: '#45475a', autorange: 'reversed' }
+                    }, { responsive: true });
+                };
+                plotCLLadder('taConsecLossULChart', ulCL, 'Max Consec. Losses — Upper Ladders (per-rung, isolated)');
+                plotCLLadder('taConsecLossDLChart', dlCL, 'Max Consec. Losses — Lower Ladders (per-rung, isolated)');
+
+                // ── CONSECUTIVE LOSS BY SETUP ─────────────────────────────────
+                const setupOrder = ['Bull Setup', 'Short Setup', 'Reversal Short', 'Reversal Long'];
+                const clSetupOverallLabels = setupOrder.filter(s => ta.consec_loss_by_setup[s] != null);
+                const clSetupOverallVals = clSetupOverallLabels.map(s => ta.consec_loss_by_setup[s]);
+                Plotly.newPlot('taConsecSetupOverallChart', [{
+                    y: clSetupOverallLabels, x: clSetupOverallVals, type: 'bar', orientation: 'h',
+                    marker: { color: '#cba6f7' },
+                    text: clSetupOverallVals.map(v => v),
+                    textposition: 'outside',
+                    textfont: { size: 10, color: '#cdd6f4' },
+                    hovertemplate: '%{y}<br>Max Consec. Losses: %{x}<extra></extra>'
+                }], {
+                    title: { text: 'Max Consec. Losses by Setup — Overall (all trades)', x: 0.5, xanchor: 'center', font: { size: 12 } },
+                    paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 40, b: 40, l: 160, r: 50 },
+                    xaxis: { title: 'Max Consec. Losses', gridcolor: '#45475a' },
+                    yaxis: { gridcolor: '#45475a' }
+                }, { responsive: true });
+
+                // UL vs DL per setup
+                const clSetupLabels = setupOrder.filter(s => ta.consec_loss_setup_ul[s] != null || ta.consec_loss_setup_dl[s] != null);
+                Plotly.newPlot('taConsecSetupULDLChart', [
+                    { y: clSetupLabels, x: clSetupLabels.map(s => ta.consec_loss_setup_ul[s] || 0), name: 'Upper Ladders (UL)', type: 'bar', orientation: 'h', marker: { color: '#89b4fa' }, hovertemplate: '%{y}<br>UL: %{x}<extra></extra>' },
+                    { y: clSetupLabels, x: clSetupLabels.map(s => ta.consec_loss_setup_dl[s] || 0), name: 'Lower Ladders (DL)', type: 'bar', orientation: 'h', marker: { color: '#f9e2af' }, hovertemplate: '%{y}<br>DL: %{x}<extra></extra>' }
+                ], {
+                    title: { text: 'Max Consec. Losses by Setup — UL vs DL (per-setup, isolated)', x: 0.5, xanchor: 'center', font: { size: 12 } },
+                    barmode: 'group',
+                    paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 40, b: 40, l: 160, r: 50 },
+                    xaxis: { title: 'Max Consec. Losses', gridcolor: '#45475a' },
+                    yaxis: { gridcolor: '#45475a' },
+                    legend: { x: 0.6, y: 0.05, bgcolor: 'rgba(49,50,68,0.8)' }
+                }, { responsive: true });
+
+                // ── BEST & WORST 10 TRADING DAYS ──────────────────────────────
+                Plotly.newPlot('taBestDaysChart', [{
+                    y: ta.top10_days.map(r => r.date),
+                    x: ta.top10_days.map(r => r.pnl),
+                    type: 'bar', orientation: 'h',
+                    marker: { color: '#a6e3a1' },
+                    text: ta.top10_days.map(r => '$' + r.pnl.toLocaleString('en-US', {maximumFractionDigits:0})),
+                    textposition: 'outside',
+                    textfont: { size: 10, color: '#cdd6f4' },
+                    hovertemplate: '%{y}<br>P&L: $%{x:,.0f}<extra></extra>'
+                }], {
+                    title: { text: 'Top 10 Best Trading Days', x: 0.5, xanchor: 'center', font: { size: 12 } },
+                    paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 40, b: 40, l: 135, r: 70 },
+                    xaxis: { title: '', gridcolor: '#45475a', tickformat: '$,.0f' },
+                    yaxis: { gridcolor: '#45475a', autorange: 'reversed' }
+                }, { responsive: true });
+
+                Plotly.newPlot('taWorstDaysChart', [{
+                    y: ta.bottom10_days.map(r => r.date),
+                    x: ta.bottom10_days.map(r => r.pnl),
+                    type: 'bar', orientation: 'h',
+                    marker: { color: '#f38ba8' },
+                    text: ta.bottom10_days.map(r => '$' + r.pnl.toLocaleString('en-US', {maximumFractionDigits:0})),
+                    textposition: 'outside',
+                    textfont: { size: 10, color: '#cdd6f4' },
+                    hovertemplate: '%{y}<br>P&L: $%{x:,.0f}<extra></extra>'
+                }], {
+                    title: { text: 'Worst 10 Trading Days (Note: Shows daily P&L, not intraday max loss)', x: 0.5, xanchor: 'center', font: { size: 12 } },
+                    paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t: 40, b: 40, l: 135, r: 70 },
+                    xaxis: { title: '', gridcolor: '#45475a', tickformat: '$,.0f' },
+                    yaxis: { gridcolor: '#45475a' }
+                }, { responsive: true });
+
+            } catch(e) {
+                console.error('Error in displayTradeAnalysis:', e);
+                document.getElementById('taSummaryCards').innerHTML = `<div class="error">Error loading Trade Analysis: ${e.message}</div>`;
             }
         }
         
