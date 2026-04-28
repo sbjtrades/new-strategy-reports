@@ -476,7 +476,21 @@
         
         <!-- RISK & REWARD TAB -->
         <div id="risk-reward" class="tab-content">
-            <div class="error">Risk & Reward Tab — Coming Soon</div>
+            <div id="rrKeyTakeaways" style="margin-bottom: 30px;"></div>
+            <div id="rrSummaryCards" style="margin-bottom: 30px;"></div>
+            <div id="rrDirectionalCards" style="margin-bottom: 30px;"></div>
+            <div class="section-header">📊 WIN:LOSS R:R RATIO PER LADDER</div>
+            <div id="rrRatioCharts" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;"></div>
+            <div class="section-header" style="margin-top:20px;">💰 PROFIT FACTOR PER LADDER</div>
+            <div id="rrProfitFactorCharts" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;"></div>
+            <div class="section-header" style="margin-top:20px;">🎯 EXPECTANCY PER LADDER ($ per trade)</div>
+            <div id="rrExpectancyCharts" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;"></div>
+            <div class="section-header" style="margin-top:20px;">📈 AVG WIN VS AVG LOSS PER LADDER</div>
+            <div id="rrWinLossCharts" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;"></div>
+            <div class="section-header" style="margin-top:20px;">📉 MFE &amp; MAE PER LADDER (Longs)</div>
+            <div id="rrMFELongsChart" style="margin-bottom:30px;"></div>
+            <div class="section-header" style="margin-top:20px;">📉 MFE &amp; MAE PER LADDER (Shorts)</div>
+            <div id="rrMFEShortsChart" style="margin-bottom:30px;"></div>
         </div>
         
         <!-- TRADE ANALYSIS TAB -->
@@ -546,6 +560,8 @@
                 updatePnLTab();
             } else if (tabId === 'time-patterns') {
                 displayTimePatterns();
+            } else if (tabId === 'risk-reward') {
+                displayRiskReward();
             }
         }
         
@@ -745,6 +761,11 @@
             // If Time & Day Patterns tab is currently visible, update it too
             if (document.getElementById('time-patterns').classList.contains('active')) {
                 displayTimePatterns();
+            }
+
+            // If Risk & Reward tab is currently visible, update it too
+            if (document.getElementById('risk-reward').classList.contains('active')) {
+                displayRiskReward();
             }
         }
         
@@ -1642,6 +1663,267 @@
                 try { displayTradingQuarterCharts(tradingQuarterData); } catch(e) { console.error('Quarter chart error:', e); }
             } catch (e) {
                 console.error('Error displaying time patterns:', e);
+            }
+        }
+
+        function displayRiskReward() {
+            try {
+                const instrumentData = dashboardData.instruments[currentInstrument];
+                const rr = instrumentData.risk_reward;
+                if (!rr || !rr.overall) {
+                    document.getElementById('rrKeyTakeaways').innerHTML = '<div class="error">No Risk & Reward data available.</div>';
+                    return;
+                }
+
+                const fmt$ = v => `$${Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0})}`;
+                const fmtSign$ = v => (v >= 0 ? '+' : '') + '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+                const overall = rr.overall;
+                const longs = rr.longs;
+                const shorts = rr.shorts;
+
+                // ── KEY TAKEAWAYS ──────────────────────────────────────────────
+                const bestRRLadder = Object.entries(rr.by_ladder)
+                    .map(([l, d]) => ({ladder: l, rr: (d.Long?.rr_ratio || 0) > (d.Short?.rr_ratio || 0) ? d.Long?.rr_ratio || 0 : d.Short?.rr_ratio || 0}))
+                    .sort((a,b) => b.rr - a.rr)[0];
+                const bestExpLadder = Object.entries(rr.by_ladder)
+                    .map(([l, d]) => ({ladder: l, exp: Math.max(d.Long?.expectancy || -Infinity, d.Short?.expectancy || -Infinity)}))
+                    .sort((a,b) => b.exp - a.exp)[0];
+                const worstExpLadder = Object.entries(rr.by_ladder)
+                    .map(([l, d]) => ({ladder: l, exp: Math.min(d.Long?.expectancy ?? Infinity, d.Short?.expectancy ?? Infinity)}))
+                    .filter(x => isFinite(x.exp))
+                    .sort((a,b) => a.exp - b.exp)[0];
+
+                document.getElementById('rrKeyTakeaways').innerHTML = `
+                    <div class="key-takeaways">
+                        <h3>📋 KEY TAKEAWAYS — Risk &amp; Reward</h3>
+                        <ul>
+                            <li><strong>Overall Profit Factor: ${overall.profit_factor}x</strong> — ${overall.profit_factor >= 1.5 ? 'Strong edge' : overall.profit_factor >= 1.0 ? 'Positive edge' : 'Negative edge'}; gross wins ${overall.profit_factor >= 1 ? 'exceed' : 'below'} gross losses by ${overall.profit_factor}x</li>
+                            <li><strong>Avg Win: ${fmt$(overall.avg_win)} · Avg Loss: -${fmt$(Math.abs(overall.avg_loss))} · R:R: ${overall.rr_ratio}x</strong> — losers are only ${Math.round(Math.abs(overall.avg_loss)/overall.avg_win*100)}% the size of winners</li>
+                            <li><strong>Expected value per trade: ${fmtSign$(overall.expectancy)}</strong> (${overall.win_pct}% win rate × avg win/loss)</li>
+                            <li>Longs: PF ${longs.profit_factor}x · R:R ${longs.rr_ratio}x · Expectancy ${fmtSign$(longs.expectancy)} &nbsp;|&nbsp; Shorts: PF ${shorts.profit_factor}x · R:R ${shorts.rr_ratio}x · Expectancy ${fmtSign$(shorts.expectancy)}</li>
+                            ${bestRRLadder ? `<li>Best R:R ladder: <strong>${bestRRLadder.ladder}</strong> at ${bestRRLadder.rr}x</li>` : ''}
+                            ${bestExpLadder ? `<li>Highest expectancy ladder: <strong>${bestExpLadder.ladder}</strong> at ${fmtSign$(bestExpLadder.exp)}/trade &nbsp;|&nbsp; Lowest: <strong>${worstExpLadder?.ladder}</strong> at ${fmtSign$(worstExpLadder?.exp ?? 0)}/trade</li>` : ''}
+                            <li>Avg MFE on winning trades: ${fmt$(overall.avg_mfe_wins)} · Avg capture efficiency: <strong>${overall.mfe_capture_pct}%</strong> of peak move banked</li>
+                            <li>Avg MAE on losers: -${fmt$(Math.abs(overall.avg_mae_losses))} — how far losers typically went against before stopping out</li>
+                        </ul>
+                    </div>`;
+
+                // ── OVERALL SUMMARY CARDS ──────────────────────────────────────
+                const cardStyle = (color) => `background:#313244;border-radius:8px;padding:18px 15px;border-left:4px solid ${color};text-align:center;`;
+                const valStyle = (color, size='2em') => `font-size:${size};font-weight:bold;color:${color};margin-bottom:4px;`;
+                const lblStyle = `font-size:0.75em;color:#7f849c;text-transform:uppercase;letter-spacing:0.5px;`;
+
+                document.getElementById('rrSummaryCards').innerHTML = `
+                    <div style="margin-bottom:12px;font-size:0.8em;color:#7f849c;text-transform:uppercase;letter-spacing:1px;">OVERALL METRICS (ALL TRADES)</div>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;">
+                        <div style="${cardStyle('#a6e3a1')}">
+                            <div style="${valStyle('#a6e3a1')}">${overall.profit_factor}x</div>
+                            <div style="${lblStyle}">Profit Factor</div>
+                        </div>
+                        <div style="${cardStyle('#89b4fa')}">
+                            <div style="${valStyle('#89b4fa')}">${fmtSign$(overall.expectancy)}</div>
+                            <div style="${lblStyle}">Expectancy / Trade</div>
+                        </div>
+                        <div style="${cardStyle('#cba6f7')}">
+                            <div style="${valStyle('#cba6f7')}">${overall.rr_ratio}x</div>
+                            <div style="${lblStyle}">Avg Win:Loss Ratio</div>
+                        </div>
+                        <div style="${cardStyle('#a6e3a1')}">
+                            <div style="${valStyle('#a6e3a1')}">${fmt$(overall.avg_win)}</div>
+                            <div style="${lblStyle}">Avg Win $</div>
+                        </div>
+                        <div style="${cardStyle('#f38ba8')}">
+                            <div style="${valStyle('#f38ba8')}">-${fmt$(Math.abs(overall.avg_loss))}</div>
+                            <div style="${lblStyle}">Avg Loss $</div>
+                        </div>
+                        <div style="${cardStyle('#94e2d5')}">
+                            <div style="${valStyle('#94e2d5')}">${overall.mfe_capture_pct}%</div>
+                            <div style="${lblStyle}">MFE Capture Eff.</div>
+                        </div>
+                        <div style="${cardStyle('#94e2d5')}">
+                            <div style="${valStyle('#94e2d5')}">${fmt$(overall.avg_mfe_wins)}</div>
+                            <div style="${lblStyle}">Avg MFE (Wins)</div>
+                        </div>
+                        <div style="${cardStyle('#f38ba8')}">
+                            <div style="${valStyle('#f38ba8')}">-${fmt$(Math.abs(overall.avg_mae_losses))}</div>
+                            <div style="${lblStyle}">Avg MAE (Losses)</div>
+                        </div>
+                    </div>`;
+
+                // ── DIRECTIONAL BREAKDOWN CARDS ───────────────────────────────
+                const dirCard = (d, label, accentColor) => `
+                    <div style="background:#313244;border-radius:8px;padding:18px;border-top:3px solid ${accentColor};">
+                        <div style="font-size:0.8em;color:${accentColor};text-transform:uppercase;letter-spacing:1px;font-weight:bold;margin-bottom:14px;">${label}</div>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+                            <div style="text-align:center;">
+                                <div style="${valStyle(accentColor,'1.6em')}">${d.profit_factor}x</div>
+                                <div style="${lblStyle}">Profit Factor</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#89b4fa','1.6em')}">${fmtSign$(d.expectancy)}</div>
+                                <div style="${lblStyle}">Expectancy</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#cba6f7','1.6em')}">${d.rr_ratio}x</div>
+                                <div style="${lblStyle}">Win:Loss R:R</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#cdd6f4','1.6em')}">${d.win_pct}%</div>
+                                <div style="${lblStyle}">Win Rate</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#a6e3a1','1.6em')}">${fmt$(d.avg_win)}</div>
+                                <div style="${lblStyle}">Avg Win</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#f38ba8','1.6em')}">-${fmt$(Math.abs(d.avg_loss))}</div>
+                                <div style="${lblStyle}">Avg Loss</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#94e2d5','1.6em')}">${d.mfe_capture_pct}%</div>
+                                <div style="${lblStyle}">MFE Capture</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="${valStyle('#cdd6f4','1.6em')}">${d.trades.toLocaleString()}</div>
+                                <div style="${lblStyle}">Total Trades</div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                document.getElementById('rrDirectionalCards').innerHTML = `
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        ${dirCard(longs, '↑ LONGS', '#a6e3a1')}
+                        ${dirCard(shorts, '↓ SHORTS', '#f38ba8')}
+                    </div>`;
+
+                // ── PER-LADDER CHARTS ─────────────────────────────────────────
+                const upLadders = ['ORH','UL1','UL2','UL3','UL4','UL5','UL6','UL7','UL8','UL9','UL10'];
+                const downLadders = ['ORL','DL1','DL2','DL3','DL4','DL5','DL6','DL7','DL8','DL9','DL10'];
+                const chartLayout = (title) => ({
+                    title: { text: title, x:0.5, xanchor:'center', font:{size:13} },
+                    paper_bgcolor: '#313244',
+                    plot_bgcolor: '#313244',
+                    font: { color: '#cdd6f4' },
+                    margin: { t:45, b:40, l:60, r:20 },
+                    xaxis: { gridcolor:'#45475a' },
+                    yaxis: { gridcolor:'#45475a' },
+                    showlegend: false
+                });
+
+                const getBarColor = (vals) => vals.map(v => v >= 0 ? '#94e2d5' : '#f38ba8');
+
+                // Win:Loss R:R charts
+                const rrCont = document.getElementById('rrRatioCharts');
+                rrCont.innerHTML = '<div id="rrRatioLongs"></div><div id="rrRatioShorts"></div>';
+
+                const rrLongVals = upLadders.map(l => rr.by_ladder[l]?.Long?.rr_ratio || 0);
+                const rrShortVals = downLadders.map(l => rr.by_ladder[l]?.Short?.rr_ratio || 0);
+
+                Plotly.newPlot('rrRatioLongs', [{
+                    x: upLadders, y: rrLongVals, type: 'bar',
+                    marker: { color: getBarColor(rrLongVals) },
+                    text: rrLongVals.map(v => v ? v.toFixed(2)+'x' : ''),
+                    textposition: 'outside', textfont: { size: 11, color: '#cdd6f4' },
+                    hovertemplate: '%{x}<br>Win:Loss R:R: %{y:.2f}x<extra></extra>'
+                }], chartLayout('Avg Win:Loss Ratio — Longs'), {responsive:true});
+
+                Plotly.newPlot('rrRatioShorts', [{
+                    x: downLadders, y: rrShortVals, type: 'bar',
+                    marker: { color: getBarColor(rrShortVals) },
+                    text: rrShortVals.map(v => v ? v.toFixed(2)+'x' : ''),
+                    textposition: 'outside', textfont: { size: 11, color: '#cdd6f4' },
+                    hovertemplate: '%{x}<br>Win:Loss R:R: %{y:.2f}x<extra></extra>'
+                }], chartLayout('Avg Win:Loss Ratio — Shorts'), {responsive:true});
+
+                // Profit Factor charts
+                const pfCont = document.getElementById('rrProfitFactorCharts');
+                pfCont.innerHTML = '<div id="rrPFLongs"></div><div id="rrPFShorts"></div>';
+
+                const pfLongVals = upLadders.map(l => rr.by_ladder[l]?.Long?.profit_factor || 0);
+                const pfShortVals = downLadders.map(l => rr.by_ladder[l]?.Short?.profit_factor || 0);
+
+                Plotly.newPlot('rrPFLongs', [{
+                    x: upLadders, y: pfLongVals, type: 'bar',
+                    marker: { color: pfLongVals.map(v => v >= 1.5 ? '#a6e3a1' : v >= 1 ? '#f9e2af' : '#f38ba8') },
+                    text: pfLongVals.map(v => v ? v.toFixed(2)+'x' : ''),
+                    textposition: 'outside', textfont: { size: 11, color: '#cdd6f4' },
+                    hovertemplate: '%{x}<br>Profit Factor: %{y:.2f}x<extra></extra>'
+                }], {...chartLayout('Profit Factor — Longs'), shapes:[{type:'line',x0:-0.5,x1:upLadders.length-0.5,y0:1,y1:1,line:{color:'#6c7086',width:1,dash:'dot'}}]}, {responsive:true});
+
+                Plotly.newPlot('rrPFShorts', [{
+                    x: downLadders, y: pfShortVals, type: 'bar',
+                    marker: { color: pfShortVals.map(v => v >= 1.5 ? '#a6e3a1' : v >= 1 ? '#f9e2af' : '#f38ba8') },
+                    text: pfShortVals.map(v => v ? v.toFixed(2)+'x' : ''),
+                    textposition: 'outside', textfont: { size: 11, color: '#cdd6f4' },
+                    hovertemplate: '%{x}<br>Profit Factor: %{y:.2f}x<extra></extra>'
+                }], {...chartLayout('Profit Factor — Shorts'), shapes:[{type:'line',x0:-0.5,x1:downLadders.length-0.5,y0:1,y1:1,line:{color:'#6c7086',width:1,dash:'dot'}}]}, {responsive:true});
+
+                // Expectancy charts
+                const expCont = document.getElementById('rrExpectancyCharts');
+                expCont.innerHTML = '<div id="rrExpLongs"></div><div id="rrExpShorts"></div>';
+
+                const expLongVals = upLadders.map(l => rr.by_ladder[l]?.Long?.expectancy || 0);
+                const expShortVals = downLadders.map(l => rr.by_ladder[l]?.Short?.expectancy || 0);
+
+                Plotly.newPlot('rrExpLongs', [{
+                    x: upLadders, y: expLongVals, type: 'bar',
+                    marker: { color: getBarColor(expLongVals) },
+                    text: expLongVals.map(v => (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(0)),
+                    textposition: 'outside', textfont: { size: 11, color: '#cdd6f4' },
+                    hovertemplate: '%{x}<br>Expectancy: $%{y:.0f}/trade<extra></extra>'
+                }], chartLayout('Expectancy — Longs ($ per trade)'), {responsive:true});
+
+                Plotly.newPlot('rrExpShorts', [{
+                    x: downLadders, y: expShortVals, type: 'bar',
+                    marker: { color: getBarColor(expShortVals) },
+                    text: expShortVals.map(v => (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(0)),
+                    textposition: 'outside', textfont: { size: 11, color: '#cdd6f4' },
+                    hovertemplate: '%{x}<br>Expectancy: $%{y:.0f}/trade<extra></extra>'
+                }], chartLayout('Expectancy — Shorts ($ per trade)'), {responsive:true});
+
+                // Avg Win vs Avg Loss grouped bars
+                const wlCont = document.getElementById('rrWinLossCharts');
+                wlCont.innerHTML = '<div id="rrWLLongs"></div><div id="rrWLShorts"></div>';
+
+                Plotly.newPlot('rrWLLongs', [
+                    { x: upLadders, y: upLadders.map(l => rr.by_ladder[l]?.Long?.avg_win || 0), name: 'Avg Win', type:'bar', marker:{color:'#a6e3a1'}, hovertemplate:'%{x}<br>Avg Win: $%{y:.0f}<extra></extra>' },
+                    { x: upLadders, y: upLadders.map(l => rr.by_ladder[l]?.Long?.avg_loss || 0), name: 'Avg Loss', type:'bar', marker:{color:'#f38ba8'}, hovertemplate:'%{x}<br>Avg Loss: $%{y:.0f}<extra></extra>' }
+                ], { ...chartLayout('Avg Win vs Avg Loss — Longs'), barmode:'group', showlegend:true, legend:{x:0.02,y:0.98,bgcolor:'rgba(49,50,68,0.8)'} }, {responsive:true});
+
+                Plotly.newPlot('rrWLShorts', [
+                    { x: downLadders, y: downLadders.map(l => rr.by_ladder[l]?.Short?.avg_win || 0), name: 'Avg Win', type:'bar', marker:{color:'#a6e3a1'}, hovertemplate:'%{x}<br>Avg Win: $%{y:.0f}<extra></extra>' },
+                    { x: downLadders, y: downLadders.map(l => rr.by_ladder[l]?.Short?.avg_loss || 0), name: 'Avg Loss', type:'bar', marker:{color:'#f38ba8'}, hovertemplate:'%{x}<br>Avg Loss: $%{y:.0f}<extra></extra>' }
+                ], { ...chartLayout('Avg Win vs Avg Loss — Shorts'), barmode:'group', showlegend:true, legend:{x:0.02,y:0.98,bgcolor:'rgba(49,50,68,0.8)'} }, {responsive:true});
+
+                // MFE & MAE per ladder (Longs)
+                const mfeLongsLayout = {
+                    ...chartLayout('Avg MFE (Wins) vs Avg MAE (Losses) — Longs'),
+                    barmode: 'group',
+                    showlegend: true,
+                    legend: {x:0.02, y:0.98, bgcolor:'rgba(49,50,68,0.8)'}
+                };
+                document.getElementById('rrMFELongsChart').innerHTML = '<div id="rrMFELongsPlot"></div>';
+                Plotly.newPlot('rrMFELongsPlot', [
+                    { x: upLadders, y: upLadders.map(l => rr.by_ladder[l]?.Long?.avg_mfe_wins || 0), name: 'Avg MFE (Wins)', type:'bar', marker:{color:'#94e2d5'}, hovertemplate:'%{x}<br>Avg MFE: $%{y:.0f}<extra></extra>' },
+                    { x: upLadders, y: upLadders.map(l => rr.by_ladder[l]?.Long?.avg_mae_losses || 0), name: 'Avg MAE (Losses)', type:'bar', marker:{color:'#f38ba8'}, hovertemplate:'%{x}<br>Avg MAE: $%{y:.0f}<extra></extra>' }
+                ], mfeLongsLayout, {responsive:true});
+
+                // MFE & MAE per ladder (Shorts)
+                const mfeShortsLayout = {
+                    ...chartLayout('Avg MFE (Wins) vs Avg MAE (Losses) — Shorts'),
+                    barmode: 'group',
+                    showlegend: true,
+                    legend: {x:0.02, y:0.98, bgcolor:'rgba(49,50,68,0.8)'}
+                };
+                document.getElementById('rrMFEShortsChart').innerHTML = '<div id="rrMFEShortsPlot"></div>';
+                Plotly.newPlot('rrMFEShortsPlot', [
+                    { x: downLadders, y: downLadders.map(l => rr.by_ladder[l]?.Short?.avg_mfe_wins || 0), name: 'Avg MFE (Wins)', type:'bar', marker:{color:'#94e2d5'}, hovertemplate:'%{x}<br>Avg MFE: $%{y:.0f}<extra></extra>' },
+                    { x: downLadders, y: downLadders.map(l => rr.by_ladder[l]?.Short?.avg_mae_losses || 0), name: 'Avg MAE (Losses)', type:'bar', marker:{color:'#f38ba8'}, hovertemplate:'%{x}<br>Avg MAE: $%{y:.0f}<extra></extra>' }
+                ], mfeShortsLayout, {responsive:true});
+
+            } catch(e) {
+                console.error('Error in displayRiskReward:', e);
+                document.getElementById('rrKeyTakeaways').innerHTML = `<div class="error">Error loading Risk & Reward: ${e.message}</div>`;
             }
         }
         
