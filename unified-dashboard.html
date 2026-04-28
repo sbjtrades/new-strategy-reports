@@ -1770,41 +1770,55 @@
             const losses = data.losses || 0;
             const winPct = data.win_pct || 0;
             const avgPnl = trades > 0 ? (pnl / trades).toFixed(2) : 0;
+            const winsGross = data.wins_gross || 0;
+            const lossesGross = data.losses_gross || 0;
+            const totalPts = data.point_value || 0;
+            const avgPts = data.avg_pts || 0;
             
             const pnlColor = pnl >= 0 ? '#a6e3a1' : '#f38ba8';
             const pnlSign = pnl >= 0 ? '+' : '';
             
-            // Create compact card layout
+            // Create detailed breakdown similar to ladder analysis
             const html = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; padding: 15px;">
-                    <!-- P&L Card (Prominent) -->
-                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid ${pnlColor}; grid-column: 1/3;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Net P&L</div>
-                        <div style="font-size: 2em; font-weight: bold; color: ${pnlColor};">${pnlSign}$${Math.abs(pnl).toLocaleString()}</div>
-                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Avg: ${pnlSign}$${Math.abs(avgPnl).toLocaleString()}</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px;">
+                    <!-- Main P&L Card (Prominent, spans 2 columns) -->
+                    <div style="background: #1e1e2e; padding: 20px; border-radius: 6px; border-left: 4px solid ${pnlColor}; grid-column: 1/3;">
+                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: bold;">NET P&L</div>
+                        <div style="font-size: 2.2em; font-weight: bold; color: ${pnlColor};">${pnlSign}$${Math.abs(pnl).toLocaleString()}</div>
+                        <div style="font-size: 0.85em; color: #89b4fa; margin-top: 5px;">Avg: ${pnlSign}$${Math.abs(avgPnl).toLocaleString()} per trade</div>
                     </div>
                     
-                    <!-- Win % Card -->
+                    <!-- Wins Card -->
+                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #a6e3a1;">
+                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Wins</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #a6e3a1;">${wins}</div>
+                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Gross Profit: <span style="color: #a6e3a1; font-weight: bold;">$${Math.abs(winsGross).toLocaleString()}</span></div>
+                    </div>
+                    
+                    <!-- Losses Card -->
+                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #f38ba8;">
+                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Losses</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #f38ba8;">${losses}</div>
+                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Gross Loss: <span style="color: #f38ba8; font-weight: bold;">$${Math.abs(lossesGross).toLocaleString()}</span></div>
+                    </div>
+                    
+                    <!-- Win Rate Card -->
                     <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #89b4fa;">
                         <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Win Rate</div>
-                        <div style="font-size: 2em; font-weight: bold; color: #89b4fa;">${winPct.toFixed(1)}%</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #89b4fa;">${winPct.toFixed(1)}%</div>
                     </div>
                     
                     <!-- Trades Card -->
                     <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #cba6f7;">
                         <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Trades</div>
-                        <div style="font-size: 2em; font-weight: bold; color: #cba6f7;">${trades}</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #cba6f7;">${trades}</div>
                     </div>
                     
-                    <!-- Wins/Losses Row -->
-                    <div style="background: #1e1e2e; padding: 12px; border-radius: 6px; border-left: 4px solid #a6e3a1; display: flex; flex-direction: column; justify-content: center;">
-                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; margin-bottom: 4px;">Wins</div>
-                        <div style="font-size: 1.6em; font-weight: bold; color: #a6e3a1;">${wins}</div>
-                    </div>
-                    
-                    <div style="background: #1e1e2e; padding: 12px; border-radius: 6px; border-left: 4px solid #f38ba8; display: flex; flex-direction: column; justify-content: center;">
-                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; margin-bottom: 4px;">Losses</div>
-                        <div style="font-size: 1.6em; font-weight: bold; color: #f38ba8;">${losses}</div>
+                    <!-- Points Card -->
+                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #f5c563;">
+                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Total Points</div>
+                        <div style="font-size: 1.5em; font-weight: bold; color: #f5c563;">${totalPts.toLocaleString()}</div>
+                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Avg: ${avgPts.toLocaleString()} pts</div>
                     </div>
                 </div>
             `;
