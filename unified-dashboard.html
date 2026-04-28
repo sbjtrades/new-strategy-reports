@@ -1635,11 +1635,11 @@
                     tradingQuarterData = tradingQuarterData || (instrumentData.by_trading_quarter || {});
                 }
                 
-                // Render all charts and table
-                displayDayOfWeekCharts(dayOfWeekData);
-                displayHourlyCharts(hourlyData);
-                displayTradingQuarterTable(tradingQuarterData);
-                displayTradingQuarterCharts(tradingQuarterData);
+                // Render each section independently so one failure doesn't block others
+                try { displayDayOfWeekCharts(dayOfWeekData); } catch(e) { console.error('DOW chart error:', e); }
+                try { displayHourlyCharts(hourlyData); } catch(e) { console.error('Hourly chart error:', e); }
+                try { displayTradingQuarterTable(tradingQuarterData); } catch(e) { console.error('Quarter table error:', e); }
+                try { displayTradingQuarterCharts(tradingQuarterData); } catch(e) { console.error('Quarter chart error:', e); }
             } catch (e) {
                 console.error('Error displaying time patterns:', e);
             }
@@ -1681,6 +1681,14 @@
                     if (quarterVal !== 'all') {
                         const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
                         return monthData[dataKey] || null;
+                    } else {
+                        // Quarter is 'all' - search all quarters for this month
+                        for (let q in instrumentData.by_period[yearVal].quarters) {
+                            const months = instrumentData.by_period[yearVal].quarters[q].months;
+                            if (months && months[monthVal]) {
+                                return months[monthVal][dataKey] || null;
+                            }
+                        }
                     }
                 } else if (quarterVal !== 'all') {
                     // Quarter level
