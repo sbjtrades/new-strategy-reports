@@ -1106,56 +1106,17 @@
         }
         
         function updatePnLTab() {
-            // Get current period and setup data (same logic as updateDisplay)
             const instrumentData = dashboardData.instruments[currentInstrument];
-            let setupData = instrumentData.setup_type_by_entry_ladder;
-            let ladderData = instrumentData[currentTradeFilter === 'primary' ? 'ladder_analysis_directional' : currentTradeFilter === 'reversals' ? 'ladder_analysis_reversals' : 'ladder_analysis'];
-            let periodLabel = 'All Time';
-            
-            try {
-                const yearVal = document.getElementById('yearSelect').value;
-                const quarterVal = document.getElementById('quarterSelect').value;
-                const monthVal = document.getElementById('monthSelect').value;
-                const weekVal = document.getElementById('weekSelect').value;
-                
-                // Build ladder key based on trade filter
-                let ladderKey = 'ladder_analysis';
-                if (currentTradeFilter === 'primary') {
-                    ladderKey = 'ladder_analysis_directional';
-                } else if (currentTradeFilter === 'reversals') {
-                    ladderKey = 'ladder_analysis_reversals';
-                }
-                
-                // Month level (if selected)
-                if (monthVal !== 'all') {
-                    if (yearVal !== 'all' && quarterVal !== 'all') {
-                        const monthData = instrumentData.by_period[yearVal].quarters[quarterVal].months[monthVal];
-                        periodLabel = `${yearVal} ${quarterVal} ${monthVal}`;
-                        if (monthData['setup_type_by_entry_ladder']) setupData = monthData['setup_type_by_entry_ladder'];
-                        if (monthData[ladderKey]) ladderData = monthData[ladderKey];
-                    }
-                }
-                // Quarter level (if selected)
-                else if (quarterVal !== 'all') {
-                    if (yearVal !== 'all') {
-                        const quarterData = instrumentData.by_period[yearVal].quarters[quarterVal];
-                        periodLabel = `${yearVal} ${quarterVal}`;
-                        if (quarterData['setup_type_by_entry_ladder']) setupData = quarterData['setup_type_by_entry_ladder'];
-                        if (quarterData[ladderKey]) ladderData = quarterData[ladderKey];
-                    }
-                }
-                // Year level (if selected)
-                else if (yearVal !== 'all') {
-                    const yearData = instrumentData.by_period[yearVal];
-                    periodLabel = `${yearVal} Full Year`;
-                    if (yearData['setup_type_by_entry_ladder']) setupData = yearData['setup_type_by_entry_ladder'];
-                    if (yearData[ladderKey]) ladderData = yearData[ladderKey];
-                }
-            } catch (e) {
-                console.error('Error in updatePnLTab:', e);
-            }
-            
-            // Display P&L tab charts
+            const ladderKey = currentTradeFilter === 'primary' ? 'ladder_analysis_directional'
+                            : currentTradeFilter === 'reversals' ? 'ladder_analysis_reversals'
+                            : 'ladder_analysis';
+            // getPeriodLevelData returns null when yearSelect === 'all', so fall back to all-time
+            const ladderData = getPeriodLevelData(instrumentData, ladderKey)
+                             || instrumentData[ladderKey];
+            const setupData  = getPeriodLevelData(instrumentData, 'setup_type_by_entry_ladder')
+                             || instrumentData.setup_type_by_entry_ladder;
+            const yearVal    = document.getElementById('yearSelect').value;
+            const periodLabel = yearVal !== 'all' ? getCurrentPeriodLabel() : 'All Time';
             displayPnLTabCharts(setupData, periodLabel, ladderData);
             displayHierarchicalPnLChart();
             displayAvgWinLossByLadder(ladderData);
@@ -1502,71 +1463,26 @@
             // UP LADDERS (ORH, UL1-UL10)
             const upLadderOrder = ['ORH', 'UL1', 'UL2', 'UL3', 'UL4', 'UL5', 'UL6', 'UL7', 'UL8', 'UL9', 'UL10'];
             
-            // Calculate avg win and avg loss for each ladder (longs)
-            const upAvgWin = upLadderOrder.map(l => {
-                const ladder = ladderData[l];
-                if (!ladder || !ladder.Long) return 0;
-                const longData = ladder.Long;
-                if (longData.wins === 0) return 0;
-                return Math.abs(longData.pnl / longData.trades * (longData.wins / (longData.wins + longData.losses))); // Simple approximation
-            });
-            
-            const upAvgLoss = upLadderOrder.map(l => {
-                const ladder = ladderData[l];
-                if (!ladder || !ladder.Long) return 0;
-                const longData = ladder.Long;
-                if (longData.losses === 0) return 0;
-                return Math.abs(longData.pnl / longData.trades * (longData.losses / (longData.wins + longData.losses))); // Simple approximation
-            });
-            
-            // For better accuracy, calculate from wins/losses ratio
+            // Use actual avg_win / avg_loss from ladderData (stored directly in JSON at every period level)
             const upWinsTrace = {
                 x: upLadderOrder,
-                y: upLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Long || ladder.Long.wins === 0) return 0;
-                    const longData = ladder.Long;
-                    // Estimate avg win from pnl and win count
-                    const totalWinPnL = longData.pnl * (longData.wins / (longData.wins + longData.losses || 1));
-                    return Math.max(0, totalWinPnL / longData.wins);
-                }),
+                y: upLadderOrder.map(l => ladderData[l]?.Long?.avg_win || 0),
                 name: 'Avg Win $',
                 type: 'bar',
                 marker: { color: '#a6e3a1' },
-                text: upLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Long || ladder.Long.wins === 0) return '';
-                    const longData = ladder.Long;
-                    const totalWinPnL = longData.pnl * (longData.wins / (longData.wins + longData.losses || 1));
-                    const avgWin = Math.max(0, totalWinPnL / longData.wins);
-                    return `$${avgWin.toFixed(0)}`;
-                }),
+                text: upLadderOrder.map(l => { const v = ladderData[l]?.Long?.avg_win || 0; return v ? `$${v.toFixed(0)}` : ''; }),
                 textposition: 'outside',
                 textfont: { size: 14, color: '#cdd6f4' },
                 hovertemplate: '%{x}<br>Avg Win: $%{y:,.0f}<extra></extra>'
             };
-            
+
             const upLossesTrace = {
                 x: upLadderOrder,
-                y: upLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Long || ladder.Long.losses === 0) return 0;
-                    const longData = ladder.Long;
-                    // Estimate avg loss from pnl and loss count
-                    const totalLossPnL = longData.pnl * (longData.losses / (longData.wins + longData.losses || 1));
-                    return Math.abs(totalLossPnL / longData.losses);
-                }),
+                y: upLadderOrder.map(l => Math.abs(ladderData[l]?.Long?.avg_loss || 0)),
                 name: 'Avg Loss $',
                 type: 'bar',
                 marker: { color: '#f38ba8' },
-                text: upLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Long || ladder.Long.losses === 0) return '';
-                    const longData = ladder.Long;
-                    const totalLossPnL = longData.pnl * (longData.losses / (longData.wins + longData.losses || 1));
-                    const avgLoss = Math.abs(totalLossPnL / longData.losses);
-                    return `$${avgLoss.toFixed(0)}`;
-                }),
+                text: upLadderOrder.map(l => { const v = Math.abs(ladderData[l]?.Long?.avg_loss || 0); return v ? `$${v.toFixed(0)}` : ''; }),
                 textposition: 'outside',
                 textfont: { size: 14, color: '#cdd6f4' },
                 hovertemplate: '%{x}<br>Avg Loss: $%{y:,.0f}<extra></extra>'
@@ -1592,49 +1508,23 @@
             
             const downWinsTrace = {
                 x: downLadderOrder,
-                y: downLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Short || ladder.Short.wins === 0) return 0;
-                    const shortData = ladder.Short;
-                    const totalWinPnL = shortData.pnl * (shortData.wins / (shortData.wins + shortData.losses || 1));
-                    return Math.max(0, totalWinPnL / shortData.wins);
-                }),
+                y: downLadderOrder.map(l => ladderData[l]?.Short?.avg_win || 0),
                 name: 'Avg Win $',
                 type: 'bar',
                 marker: { color: '#a6e3a1' },
-                text: downLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Short || ladder.Short.wins === 0) return '';
-                    const shortData = ladder.Short;
-                    const totalWinPnL = shortData.pnl * (shortData.wins / (shortData.wins + shortData.losses || 1));
-                    const avgWin = Math.max(0, totalWinPnL / shortData.wins);
-                    return `$${avgWin.toFixed(0)}`;
-                }),
+                text: downLadderOrder.map(l => { const v = ladderData[l]?.Short?.avg_win || 0; return v ? `$${v.toFixed(0)}` : ''; }),
                 textposition: 'outside',
                 textfont: { size: 14, color: '#cdd6f4' },
                 hovertemplate: '%{x}<br>Avg Win: $%{y:,.0f}<extra></extra>'
             };
-            
+
             const downLossesTrace = {
                 x: downLadderOrder,
-                y: downLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Short || ladder.Short.losses === 0) return 0;
-                    const shortData = ladder.Short;
-                    const totalLossPnL = shortData.pnl * (shortData.losses / (shortData.wins + shortData.losses || 1));
-                    return Math.abs(totalLossPnL / shortData.losses);
-                }),
+                y: downLadderOrder.map(l => Math.abs(ladderData[l]?.Short?.avg_loss || 0)),
                 name: 'Avg Loss $',
                 type: 'bar',
                 marker: { color: '#f38ba8' },
-                text: downLadderOrder.map(l => {
-                    const ladder = ladderData[l];
-                    if (!ladder || !ladder.Short || ladder.Short.losses === 0) return '';
-                    const shortData = ladder.Short;
-                    const totalLossPnL = shortData.pnl * (shortData.losses / (shortData.wins + shortData.losses || 1));
-                    const avgLoss = Math.abs(totalLossPnL / shortData.losses);
-                    return `$${avgLoss.toFixed(0)}`;
-                }),
+                text: downLadderOrder.map(l => { const v = Math.abs(ladderData[l]?.Short?.avg_loss || 0); return v ? `$${v.toFixed(0)}` : ''; }),
                 textposition: 'outside',
                 textfont: { size: 14, color: '#cdd6f4' },
                 hovertemplate: '%{x}<br>Avg Loss: $%{y:,.0f}<extra></extra>'
@@ -1700,10 +1590,58 @@
             }
         }
 
+        function buildRRFromLadderData(ld) {
+            const UL = ['ORH','UL1','UL2','UL3','UL4','UL5','UL6','UL7','UL8','UL9','UL10'];
+            const DL = ['ORL','DL1','DL2','DL3','DL4','DL5','DL6','DL7','DL8','DL9','DL10'];
+            const agg = (ladders, dir) => {
+                let tr=0,wi=0,lo=0,gp=0,gl=0,mfS=0,mfW=0,maS=0,maL=0;
+                for (const l of ladders) {
+                    const d = ld[l]?.[dir]; if (!d||!d.trades) continue;
+                    tr+=d.trades; wi+=d.wins||0; lo+=d.losses||0;
+                    gp+=d.gross_profit||0; gl+=d.gross_loss||0;
+                    if (d.avg_mfe_wins&&d.wins){mfS+=d.avg_mfe_wins*d.wins; mfW+=d.wins;}
+                    if (d.avg_mae_losses&&d.losses){maS+=d.avg_mae_losses*d.losses; maL+=d.losses;}
+                }
+                if (!tr) return null;
+                const aw=wi?gp/wi:0, al=lo?gl/lo:0, wp=Math.round(wi/tr*1000)/10;
+                const mfe=mfW?Math.round(mfS/mfW*100)/100:0, mae=maL?Math.round(maS/maL*100)/100:0;
+                return {trades:tr,wins:wi,losses:lo,win_pct:wp,gross_profit:gp,gross_loss:gl,
+                    avg_win:Math.round(aw*100)/100, avg_loss:Math.round(al*100)/100,
+                    rr_ratio:al?Math.round(aw/Math.abs(al)*100)/100:0,
+                    profit_factor:gl?Math.round(gp/Math.abs(gl)*100)/100:0,
+                    expectancy:Math.round((wp/100*aw+(1-wp/100)*al)*100)/100,
+                    avg_mfe_wins:mfe, avg_mae_losses:mae,
+                    mfe_capture_pct:mfe?Math.round(aw/mfe*1000)/10:0};
+            };
+            const L=agg(UL,'Long'), S=agg(DL,'Short');
+            const tr=(L?.trades||0)+(S?.trades||0), wi=(L?.wins||0)+(S?.wins||0), lo=(L?.losses||0)+(S?.losses||0);
+            const gp=(L?.gross_profit||0)+(S?.gross_profit||0), gl=(L?.gross_loss||0)+(S?.gross_loss||0);
+            const aw=wi?gp/wi:0, al=lo?gl/lo:0, wp=tr?Math.round(wi/tr*1000)/10:0;
+            const mfe=wi?((L?.avg_mfe_wins||0)*(L?.wins||0)+(S?.avg_mfe_wins||0)*(S?.wins||0))/wi:0;
+            const mae=lo?((L?.avg_mae_losses||0)*(L?.losses||0)+(S?.avg_mae_losses||0)*(S?.losses||0))/lo:0;
+            const overall={trades:tr,wins:wi,losses:lo,win_pct:wp,
+                avg_win:Math.round(aw*100)/100, avg_loss:Math.round(al*100)/100,
+                rr_ratio:al?Math.round(aw/Math.abs(al)*100)/100:0,
+                profit_factor:gl?Math.round(gp/Math.abs(gl)*100)/100:0,
+                expectancy:Math.round((wp/100*aw+(1-wp/100)*al)*100)/100,
+                avg_mfe_wins:Math.round(mfe*100)/100, avg_mae_losses:Math.round(mae*100)/100,
+                mfe_capture_pct:mfe?Math.round(aw/mfe*1000)/10:0};
+            const byLadder={};
+            [...UL.map(l=>({l,dir:'Long'})),...DL.map(l=>({l,dir:'Short'}))].forEach(({l,dir})=>{
+                if(!byLadder[l])byLadder[l]={};
+                const d=ld[l]?.[dir]; if(d) byLadder[l][dir]=d;
+            });
+            return {overall, longs:L||overall, shorts:S||overall, by_ladder:byLadder};
+        }
+
         function displayRiskReward() {
             try {
                 const instrumentData = dashboardData.instruments[currentInstrument];
-                const rr = instrumentData.risk_reward;
+                // Use period-filtered ladder_analysis to build R&R when a filter is active
+                const periodLadderData = getPeriodLevelData(instrumentData, 'ladder_analysis');
+                const rr = periodLadderData
+                    ? buildRRFromLadderData(periodLadderData)
+                    : instrumentData.risk_reward;
                 if (!rr || !rr.overall) {
                     document.getElementById('rrKeyTakeaways').innerHTML = '<div class="error">No Risk & Reward data available.</div>';
                     return;
