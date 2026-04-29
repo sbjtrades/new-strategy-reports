@@ -427,8 +427,12 @@
                     </table>
                 </div>
                 
+                <!-- Hourly Overview Chart -->
+                <div class="section-header" style="margin-top: 50px;">⏰ HOURLY BREAKDOWN — Wins vs Losses Overview</div>
+                <div class="chart-container" style="margin-bottom:30px;"><div id="hourlyOverviewChart" style="height:340px;"></div></div>
+
                 <!-- Individual Hour Breakdown -->
-                <div class="section-header" style="margin-top: 50px;">⏰ HOURLY BREAKDOWN (Each Hour Separate)</div>
+                <div class="section-header" style="margin-top: 20px;">⏰ HOURLY BREAKDOWN (Each Hour Separate)</div>
                 
                 <!-- 9:30-10:00 (ANOMALY) -->
                 <div style="margin: 30px 0; background: #45475a30; padding: 20px; border-left: 4px solid #f38ba8; border-radius: 4px;">
@@ -520,8 +524,8 @@
 
             <div id="taBestWorstHeader" class="section-header" style="margin-top:30px;margin-bottom:12px;">📅 BEST & WORST TRADING DAYS</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px;">
-                <div class="chart-container"><div id="taBestDaysChart" style="height:360px;"></div></div>
-                <div class="chart-container"><div id="taWorstDaysChart" style="height:360px;"></div></div>
+                <div class="chart-container" style="padding:20px;"><div id="taBestDaysTable"></div></div>
+                <div class="chart-container" style="padding:20px;"><div id="taWorstDaysTable"></div></div>
             </div>
         </div>
     </div>
@@ -2013,17 +2017,73 @@
         }
         
         function displayHourlyCharts(hourlyData) {
-            // Individual hour breakdown
             const hoursList = [
-                { key: '09:00', chartId: 'hour0930', display: '9:00-10:00' },
-                { key: '10:00', chartId: 'hour1000', display: '10:00-11:00' },
-                { key: '11:00', chartId: 'hour1100', display: '11:00-12:00' },
-                { key: '12:00', chartId: 'hour1200', display: '12:00-1:00 PM' },
-                { key: '13:00', chartId: 'hour1300', display: '1:00-2:00 PM' },
-                { key: '14:00', chartId: 'hour1400', display: '2:00-3:00 PM' },
-                { key: '15:00', chartId: 'hour1500', display: '3:00-4:00 PM' }
+                { key: '09:00', chartId: 'hour0930', display: '9:00–10:00' },
+                { key: '10:00', chartId: 'hour1000', display: '10:00–11:00' },
+                { key: '11:00', chartId: 'hour1100', display: '11:00–12:00' },
+                { key: '12:00', chartId: 'hour1200', display: '12:00–1:00' },
+                { key: '13:00', chartId: 'hour1300', display: '1:00–2:00' },
+                { key: '14:00', chartId: 'hour1400', display: '2:00–3:00' },
+                { key: '15:00', chartId: 'hour1500', display: '3:00–4:00' }
             ];
-            
+
+            // ── OVERVIEW CHART: all hours side-by-side ────────────────────────
+            const labels  = hoursList.map(h => h.display);
+            const wins    = hoursList.map(h => (hourlyData[h.key] || {}).wins    || 0);
+            const losses  = hoursList.map(h => (hourlyData[h.key] || {}).losses  || 0);
+            const gp      = hoursList.map(h => (hourlyData[h.key] || {}).wins_gross  || 0);
+            const gl      = hoursList.map(h => Math.abs((hourlyData[h.key] || {}).losses_gross || 0));
+            const netPnl  = hoursList.map(h => (hourlyData[h.key] || {}).pnl || 0);
+            const winPcts = hoursList.map(h => (hourlyData[h.key] || {}).win_pct || 0);
+
+            const overviewTraces = [
+                {
+                    x: labels, y: wins, name: 'Wins', type: 'bar', yaxis: 'y',
+                    marker: { color: '#a6e3a1' },
+                    customdata: hoursList.map(h => {
+                        const d = hourlyData[h.key] || {};
+                        return [`$${(d.wins_gross||0).toLocaleString()}`, d.win_pct||0];
+                    }),
+                    hovertemplate: '<b>%{x}</b><br>Wins: %{y}<br>Gross Profit: %{customdata[0]}<br>Win Rate: %{customdata[1]}%<extra></extra>'
+                },
+                {
+                    x: labels, y: losses, name: 'Losses', type: 'bar', yaxis: 'y',
+                    marker: { color: '#f38ba8' },
+                    customdata: hoursList.map(h => `$${Math.abs((hourlyData[h.key]||{}).losses_gross||0).toLocaleString()}`),
+                    hovertemplate: '<b>%{x}</b><br>Losses: %{y}<br>Gross Loss: %{customdata}<extra></extra>'
+                },
+                {
+                    x: labels, y: gp, name: 'Gross Profit', type: 'bar', yaxis: 'y2',
+                    marker: { color: 'rgba(166,227,161,0.35)', line: { color:'#a6e3a1', width:1 } },
+                    visible: 'legendonly',
+                    hovertemplate: '<b>%{x}</b><br>Gross Profit: $%{y:,.0f}<extra></extra>'
+                },
+                {
+                    x: labels, y: gl, name: '|Gross Loss|', type: 'bar', yaxis: 'y2',
+                    marker: { color: 'rgba(243,139,168,0.35)', line: { color:'#f38ba8', width:1 } },
+                    visible: 'legendonly',
+                    hovertemplate: '<b>%{x}</b><br>Gross Loss: -$%{y:,.0f}<extra></extra>'
+                },
+                {
+                    x: labels, y: netPnl, name: 'Net P&L', type: 'scatter', mode: 'lines+markers',
+                    yaxis: 'y2', line: { color: '#89b4fa', width: 2 }, marker: { size: 6 },
+                    customdata: netPnl.map(v => (v>=0?'+':'')+`$${Math.abs(v).toLocaleString()}`),
+                    hovertemplate: '<b>%{x}</b><br>Net P&L: %{customdata}<extra></extra>'
+                }
+            ];
+
+            Plotly.newPlot('hourlyOverviewChart', overviewTraces, {
+                barmode: 'group',
+                paper_bgcolor: '#313244', plot_bgcolor: '#313244', font: { color: '#cdd6f4' },
+                margin: { t: 20, b: 40, l: 60, r: 80 },
+                legend: { orientation: 'h', y: 1.08 },
+                xaxis: { gridcolor: '#45475a' },
+                yaxis:  { title: 'Trade Count', gridcolor: '#45475a', side: 'left' },
+                yaxis2: { title: 'P&L ($)', gridcolor: '#45475a', side: 'right', overlaying: 'y',
+                          tickformat: '$,.0f' }
+            }, { responsive: true });
+
+            // ── INDIVIDUAL HOUR CARDS ──────────────────────────────────────────
             hoursList.forEach(hour => {
                 const data = hourlyData[hour.key] || {};
                 displayIndividualHourChart(data, hour.chartId + 'Chart', hour.key);
@@ -2039,60 +2099,55 @@
             const avgPnl = trades > 0 ? (pnl / trades).toFixed(2) : 0;
             const winsGross = data.wins_gross || 0;
             const lossesGross = data.losses_gross || 0;
-            const totalPts = data.point_value || 0;
-            const avgPts = data.avg_pts || 0;
-            
+
             const pnlColor = pnl >= 0 ? '#a6e3a1' : '#f38ba8';
             const pnlSign = pnl >= 0 ? '+' : '';
-            
-            // Create detailed breakdown similar to ladder analysis
+            const winBarW = trades > 0 ? (wins / trades * 100).toFixed(1) : 0;
+            const lossBarW = trades > 0 ? (losses / trades * 100).toFixed(1) : 0;
+
             const html = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px;">
-                    <!-- Main P&L Card (Prominent, spans 2 columns) -->
-                    <div style="background: #1e1e2e; padding: 20px; border-radius: 6px; border-left: 4px solid ${pnlColor}; grid-column: 1/3;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: bold;">NET P&L</div>
-                        <div style="font-size: 2.2em; font-weight: bold; color: ${pnlColor};">${pnlSign}$${Math.abs(pnl).toLocaleString()}</div>
-                        <div style="font-size: 0.85em; color: #89b4fa; margin-top: 5px;">Avg: ${pnlSign}$${Math.abs(avgPnl).toLocaleString()} per trade</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px;">
+                    <!-- Net P&L spans full width -->
+                    <div style="background: #1e1e2e; padding: 16px; border-radius: 6px; border-left: 4px solid ${pnlColor}; grid-column: 1/3;">
+                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: bold;">NET P&L</div>
+                        <div style="font-size: 2em; font-weight: bold; color: ${pnlColor};">${pnlSign}$${Math.abs(pnl).toLocaleString()}</div>
+                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 4px;">Avg: ${pnlSign}$${Math.abs(avgPnl).toLocaleString()} per trade · ${trades} trades total</div>
                     </div>
-                    
-                    <!-- Wins Card -->
-                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #a6e3a1;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Wins</div>
-                        <div style="font-size: 1.8em; font-weight: bold; color: #a6e3a1;">${wins}</div>
-                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Gross Profit: <span style="color: #a6e3a1; font-weight: bold;">$${Math.abs(winsGross).toLocaleString()}</span></div>
+
+                    <!-- Wins -->
+                    <div style="background: #1e1e2e; padding: 14px; border-radius: 6px; border-left: 4px solid #a6e3a1;">
+                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">WINS</div>
+                        <div style="font-size: 1.7em; font-weight: bold; color: #a6e3a1;">${wins} <span style="font-size:0.5em;color:#6c7086;">(${winBarW}%)</span></div>
+                        <div style="margin-top:8px; height:6px; background:#313244; border-radius:3px; overflow:hidden;">
+                            <div style="width:${winBarW}%; height:100%; background:#a6e3a1; border-radius:3px;"></div>
+                        </div>
+                        <div style="font-size: 0.75em; color: #a6e3a1; margin-top: 5px; font-weight:bold;">Gross: +$${Math.abs(winsGross).toLocaleString()}</div>
                     </div>
-                    
-                    <!-- Losses Card -->
-                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #f38ba8;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Losses</div>
-                        <div style="font-size: 1.8em; font-weight: bold; color: #f38ba8;">${losses}</div>
-                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Gross Loss: <span style="color: #f38ba8; font-weight: bold;">$${Math.abs(lossesGross).toLocaleString()}</span></div>
+
+                    <!-- Losses -->
+                    <div style="background: #1e1e2e; padding: 14px; border-radius: 6px; border-left: 4px solid #f38ba8;">
+                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">LOSSES</div>
+                        <div style="font-size: 1.7em; font-weight: bold; color: #f38ba8;">${losses} <span style="font-size:0.5em;color:#6c7086;">(${lossBarW}%)</span></div>
+                        <div style="margin-top:8px; height:6px; background:#313244; border-radius:3px; overflow:hidden;">
+                            <div style="width:${lossBarW}%; height:100%; background:#f38ba8; border-radius:3px;"></div>
+                        </div>
+                        <div style="font-size: 0.75em; color: #f38ba8; margin-top: 5px; font-weight:bold;">Gross: -$${Math.abs(lossesGross).toLocaleString()}</div>
                     </div>
-                    
-                    <!-- Win Rate Card -->
-                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #89b4fa;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Win Rate</div>
-                        <div style="font-size: 1.8em; font-weight: bold; color: #89b4fa;">${winPct.toFixed(1)}%</div>
+
+                    <!-- Win Rate vs Profit Factor row -->
+                    <div style="background: #1e1e2e; padding: 14px; border-radius: 6px; border-left: 4px solid #89b4fa;">
+                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">WIN RATE</div>
+                        <div style="font-size: 1.7em; font-weight: bold; color: #89b4fa;">${winPct.toFixed(1)}%</div>
                     </div>
-                    
-                    <!-- Trades Card -->
-                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #cba6f7;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Trades</div>
-                        <div style="font-size: 1.8em; font-weight: bold; color: #cba6f7;">${trades}</div>
-                    </div>
-                    
-                    <!-- Points Card -->
-                    <div style="background: #1e1e2e; padding: 15px; border-radius: 6px; border-left: 4px solid #f5c563;">
-                        <div style="font-size: 0.75em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Total Points</div>
-                        <div style="font-size: 1.5em; font-weight: bold; color: #f5c563;">${totalPts.toLocaleString()}</div>
-                        <div style="font-size: 0.8em; color: #89b4fa; margin-top: 5px;">Avg: ${avgPts.toLocaleString()} pts</div>
+                    <div style="background: #1e1e2e; padding: 14px; border-radius: 6px; border-left: 4px solid #cba6f7;">
+                        <div style="font-size: 0.7em; color: #6c7086; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">PROFIT FACTOR</div>
+                        <div style="font-size: 1.7em; font-weight: bold; color: #cba6f7;">${lossesGross ? (winsGross / Math.abs(lossesGross)).toFixed(2) : '—'}</div>
                     </div>
                 </div>
             `;
-            
             document.getElementById(chartId).innerHTML = html;
         }
-        
+
         function displayDayOfWeekCharts(dayOfWeekData) {
             const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
             
@@ -3007,16 +3062,29 @@
                 }, { responsive: true });
 
                 // ── STREAK HISTOGRAMS (All Time, global across all ladders) ─────
+                // Total trades = sum of (streak_len × occurrences) across both histograms
+                const _sumHist = hist => Object.entries(hist||{}).reduce((s,[k,v]) => s + Number(k)*v, 0);
+                const _totalTrades = _sumHist(ta.win_streak_histogram) + _sumHist(ta.loss_streak_histogram);
+
                 const plotStreak = (elId, hist, maxS, avgS, color, label) => {
                     if (!hist || !Object.keys(hist).length) return;
                     const maxKey = Math.max(...Object.keys(hist).map(Number));
                     const xs = Array.from({length: maxKey}, (_, i) => i + 1);
                     const ys = xs.map(k => hist[String(k)] || 0);
+                    const tradesInStreak = xs.map((k, i) => k * ys[i]);
+                    const pctOfAll = tradesInStreak.map(t =>
+                        _totalTrades ? (t / _totalTrades * 100).toFixed(1) : '0.0'
+                    );
                     Plotly.newPlot(elId, [{
                         x: xs, y: ys, type: 'bar', marker: { color },
+                        customdata: xs.map((k, i) => [tradesInStreak[i], pctOfAll[i]]),
                         text: ys.map(v => v > 0 ? v : ''),
                         textposition: 'outside', textfont: { size: 10, color: '#cdd6f4' },
-                        hovertemplate: '%{x} in a row: %{y} times<extra></extra>'
+                        hovertemplate:
+                            '<b>%{x} in a row</b><br>' +
+                            'Occurrences: %{y}<br>' +
+                            'Trades in these streaks: %{customdata[0]}<br>' +
+                            '% of all trades: %{customdata[1]}%<extra></extra>'
                     }], {
                         title: { text: `${label}  ·  Max: ${maxS}  ·  Avg: ${avgS}  ·  All Trades (global)`, x: 0.5, xanchor: 'center', font: { size: 11 } },
                         paper_bgcolor: '#313244', plot_bgcolor: '#313244', font: { color: '#cdd6f4' },
@@ -3064,37 +3132,37 @@
                 const top10    = isFiltered ? (ps.top10_days    || []) : (ta.top10_days    || []);
                 const bottom10 = isFiltered ? (ps.bottom10_days || []) : (ta.bottom10_days || []);
 
-                if (top10.length) {
-                    Plotly.newPlot('taBestDaysChart', [{
-                        y: top10.map(r => r.date), x: top10.map(r => r.pnl),
-                        type:'bar', orientation:'h', marker:{color:'#a6e3a1'},
-                        text: top10.map(r => '$' + Math.round(r.pnl).toLocaleString()),
-                        textposition:'outside', textfont:{size:10,color:'#cdd6f4'},
-                        hovertemplate:'%{y}<br>P&L: $%{x:,.0f}<extra></extra>'
-                    }], {
-                        title:{text:`Best ${top10.length} Days${isFiltered ? ` (${periodLabel})` : ''}`,x:0.5,xanchor:'center',font:{size:12}},
-                        paper_bgcolor:'#313244',plot_bgcolor:'#313244',font:{color:'#cdd6f4'},
-                        margin:{t:45,b:40,l:135,r:70},
-                        xaxis:{gridcolor:'#45475a',tickformat:'$,.0f'},
-                        yaxis:{gridcolor:'#45475a',autorange:'reversed'}
-                    }, { responsive: true });
-                }
+                const fmtDate = s => {
+                    if (!s) return s;
+                    const [y,m,d] = s.split('-');
+                    const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1];
+                    const dt = new Date(+y,+m-1,+d);
+                    const dw = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];
+                    return `${dw} ${mn} ${+d}, ${y}`;
+                };
+                const buildDaysTable = (rows, isGreen, titleText) => {
+                    if (!rows || !rows.length) return '<div style="color:#6c7086;padding:20px;">No data for selected period.</div>';
+                    const hdr = `<div style="font-size:0.85em;font-weight:bold;color:#cdd6f4;margin-bottom:12px;letter-spacing:0.5px;">${titleText}</div>`;
+                    const headerRow = `<div style="display:grid;grid-template-columns:30px 1fr auto;gap:8px;padding:6px 8px;font-size:0.7em;color:#6c7086;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #45475a;margin-bottom:4px;">
+                        <div>#</div><div>Date</div><div style="text-align:right;">Net P&L</div></div>`;
+                    const dataRows = rows.map((r, i) => {
+                        const color = isGreen ? '#a6e3a1' : '#f38ba8';
+                        const bg = i % 2 === 0 ? '#1e1e2e' : '#25253a';
+                        const sign = r.pnl >= 0 ? '+' : '';
+                        const bar = Math.abs(r.pnl) / Math.abs(rows[0].pnl) * 100;
+                        return `<div style="display:grid;grid-template-columns:30px 1fr auto;gap:8px;padding:9px 8px;background:${bg};border-radius:4px;margin-bottom:3px;position:relative;overflow:hidden;">
+                            <div style="position:absolute;top:0;left:0;width:${bar.toFixed(0)}%;height:100%;background:${color};opacity:0.06;pointer-events:none;"></div>
+                            <div style="font-size:0.8em;color:#6c7086;font-weight:bold;">${i+1}</div>
+                            <div style="font-size:0.85em;color:#cdd6f4;">${fmtDate(r.date)}</div>
+                            <div style="font-size:0.9em;font-weight:bold;color:${color};text-align:right;">${sign}$${Math.abs(Math.round(r.pnl)).toLocaleString()}</div>
+                        </div>`;
+                    }).join('');
+                    return hdr + headerRow + dataRows;
+                };
 
-                if (bottom10.length) {
-                    Plotly.newPlot('taWorstDaysChart', [{
-                        y: bottom10.map(r => r.date), x: bottom10.map(r => r.pnl),
-                        type:'bar', orientation:'h', marker:{color:'#f38ba8'},
-                        text: bottom10.map(r => '$' + Math.round(r.pnl).toLocaleString()),
-                        textposition:'outside', textfont:{size:10,color:'#cdd6f4'},
-                        hovertemplate:'%{y}<br>P&L: $%{x:,.0f}<extra></extra>'
-                    }], {
-                        title:{text:`Worst ${bottom10.length} Days${isFiltered ? ` (${periodLabel})` : ''}`,x:0.5,xanchor:'center',font:{size:12}},
-                        paper_bgcolor:'#313244',plot_bgcolor:'#313244',font:{color:'#cdd6f4'},
-                        margin:{t:45,b:40,l:135,r:70},
-                        xaxis:{gridcolor:'#45475a',tickformat:'$,.0f'},
-                        yaxis:{gridcolor:'#45475a'}
-                    }, { responsive: true });
-                }
+                document.getElementById('taBestDaysTable').innerHTML  = buildDaysTable(top10,    true,  `🟢 Best ${top10.length} Days${isFiltered ? ` — ${periodLabel}` : ''}`);
+                document.getElementById('taWorstDaysTable').innerHTML = buildDaysTable(bottom10, false, `🔴 Worst ${bottom10.length} Days${isFiltered ? ` — ${periodLabel}` : ''}`);
+                // taBestDaysChart / taWorstDaysChart divs no longer used (replaced by tables above)
 
             } catch(e) {
                 console.error('Error in displayTradeAnalysis:', e);
