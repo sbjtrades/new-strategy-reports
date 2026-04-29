@@ -535,9 +535,9 @@
             </div>
             <div id="taCandlePositionInsight" style="margin-bottom:16px;"></div>
             <div class="chart-container" style="margin-bottom:20px;"><div id="taCandlePositionChart" style="height:340px;"></div></div>
-            <div class="section-header" style="margin-top:20px;margin-bottom:12px;font-size:0.9em;">Win Rate % by Hour × Minute Bucket — Heatmap</div>
-            <div style="font-size:0.8em;color:#6c7086;margin-bottom:12px;">Each cell = win rate for that hour+bucket combination. Darker red = more failures. Hover for details.</div>
-            <div class="chart-container"><div id="taCandleHeatmapChart" style="height:380px;"></div></div>
+            <div class="section-header" style="margin-top:20px;margin-bottom:12px;font-size:0.9em;">Win Rate % by Minute Bucket — Each Hour (9AM–3PM)</div>
+            <div style="font-size:0.8em;color:#6c7086;margin-bottom:16px;">Each panel shows one hour of the trading day. Bars colored vs that hour's average win rate. Note: the 9AM candle only begins trading at 9:30 — first 3 buckets (0–29 min) will be sparse or empty.</div>
+            <div id="taCandleHourGrid"></div>
         </div>
     </div>
     
@@ -3176,7 +3176,7 @@
                 // taBestDaysChart / taWorstDaysChart divs no longer used (replaced by tables above)
 
                 // ── CANDLE POSITION ANALYSIS ────────────────────────────────────
-                displayCandlePositionAnalysis(instrumentData.candle_position_analysis);
+                displayCandlePositionAnalysis(dashboardData.instruments[currentInstrument].candle_position_analysis);
 
             } catch(e) {
                 console.error('Error in displayTradeAnalysis:', e);
@@ -3272,52 +3272,83 @@
                 legend: { orientation: 'h', y: 1.12 }
             }, { responsive: true });
 
-            // ── Heatmap: rows = hours, cols = buckets, value = win rate ────────
+            // ── Per-hour breakdown grid (9AM–3PM) ────────────────────────────────
             if (byHour && Object.keys(byHour).length) {
-                const hours = Object.keys(byHour).sort();
-                const hourLabels = hours.map(h => {
-                    const hr = parseInt(h); const ampm = hr >= 12 ? 'PM' : 'AM';
-                    const disp = hr > 12 ? hr-12 : hr;
-                    return `${disp}:00 ${ampm}`;
-                });
-                const zData = hours.map(h =>
-                    bucketOrder.map(b => byHour[h]?.[b]?.win_pct ?? null)
-                );
-                const textData = hours.map(h =>
-                    bucketOrder.map(b => {
-                        const v = byHour[h]?.[b];
-                        return v ? `${v.win_pct.toFixed(0)}%<br>${v.wins}W/${v.losses}L` : '';
-                    })
-                );
+                const targetHours = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+                const availHours  = targetHours.filter(h => byHour[h]);
 
-                Plotly.newPlot('taCandleHeatmapChart', [{
-                    z: zData, x: bucketOrder, y: hourLabels,
-                    type: 'heatmap',
-                    colorscale: [
-                        [0.0,  '#f38ba8'], [0.35, '#f38ba8'], [0.5, '#f5c563'],
-                        [0.65, '#a6e3a1'], [1.0,  '#a6e3a1']
-                    ],
-                    zmid: overallWR,
-                    zmin: Math.max(0, overallWR - 25),
-                    zmax: Math.min(100, overallWR + 25),
-                    text: textData, texttemplate: '%{text}',
-                    textfont: { size: 10, color: '#1e1e2e' },
-                    hoverongaps: false,
-                    customdata: hours.map(h =>
-                        bucketOrder.map(b => byHour[h]?.[b] || {})
-                    ),
-                    hovertemplate:
-                        '<b>%{y} — %{x} min into candle</b><br>' +
-                        'Win Rate: %{z:.1f}%<br>' +
-                        'Trades: %{customdata.trades}<br>' +
-                        'Net P&L: $%{customdata.pnl:,.0f}<extra></extra>',
-                    colorbar: { title: 'Win Rate %', tickformat: '.0f' }
-                }], {
-                    paper_bgcolor: '#313244', plot_bgcolor: '#313244', font: { color: '#cdd6f4' },
-                    margin: { t: 20, b: 60, l: 80, r: 100 },
-                    xaxis: { title: 'Minutes Into 1H Candle', gridcolor: '#45475a' },
-                    yaxis: { title: 'Hour of Day', gridcolor: '#45475a', autorange: 'reversed' }
-                }, { responsive: true });
+                const hourLabel = h => {
+                    const hr   = parseInt(h);
+                    const ampm = hr >= 12 ? 'PM' : 'AM';
+                    const disp = hr > 12 ? hr - 12 : hr;
+                    const note = hr === 9 ? ' (opens 9:30)' : '';
+                    return `${disp}:00 ${ampm}${note}`;
+                };
+
+                const gridEl = document.getElementById('taCandleHourGrid');
+                gridEl.innerHTML = '';
+                gridEl.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;';
+
+                availHours.forEach(h => {
+                    const hourData = byHour[h];
+                    const hTrades  = bucketOrder.reduce((s,b) => s + (hourData[b]?.trades || 0), 0);
+                    const hWins    = bucketOrder.reduce((s,b) => s + (hourData[b]?.wins   || 0), 0);
+                    const hWR      = hTrades ? (hWins / hTrades * 100) : 0;
+
+                    const wr  = bucketOrder.map(b => hourData[b]?.win_pct || 0);
+                    const tc  = bucketOrder.map(b => hourData[b]?.trades  || 0);
+                    const pnl = bucketOrder.map(b => hourData[b]?.pnl     || 0);
+                    const aw  = bucketOrder.map(b => hourData[b]?.avg_win  || 0);
+                    const al  = bucketOrder.map(b => Math.abs(hourData[b]?.avg_loss || 0));
+                    const hw  = bucketOrder.map(b => hourData[b]?.wins    || 0);
+                    const hl  = bucketOrder.map(b => hourData[b]?.losses  || 0);
+
+                    const chartId = `taCandleHour_${h.replace(':','')}`;
+                    const card    = document.createElement('div');
+                    card.style.cssText = 'background:#313244;border-radius:8px;padding:12px 12px 6px;';
+                    card.innerHTML = `<div id="${chartId}" style="height:230px;"></div>`;
+                    gridEl.appendChild(card);
+
+                    const maxWR = Math.max(...wr.filter(v => v > 0));
+
+                    Plotly.newPlot(chartId, [
+                        {
+                            x: bucketOrder, y: wr, name: 'Win Rate %', type: 'bar',
+                            marker: { color: wr.map((r,i) => tc[i] === 0 ? '#45475a' : (r >= hWR ? '#a6e3a1' : '#f38ba8')) },
+                            customdata: bucketOrder.map((_,i) => [tc[i], pnl[i], aw[i], al[i], hw[i], hl[i]]),
+                            hovertemplate:
+                                '<b>%{x} min into candle</b><br>' +
+                                'Win Rate: %{y:.1f}%<br>' +
+                                'Trades: %{customdata[0]}<br>' +
+                                'Wins: %{customdata[4]} · Losses: %{customdata[5]}<br>' +
+                                'Net P&L: $%{customdata[1]:,.0f}<br>' +
+                                'Avg Win: $%{customdata[2]:,.0f} · Avg Loss: $%{customdata[3]:,.0f}<extra></extra>',
+                            text: wr.map((r,i) => tc[i] > 0 ? r.toFixed(0)+'%' : ''),
+                            textposition: 'outside', textfont: { size: 9, color: '#cdd6f4' }
+                        },
+                        {
+                            x: bucketOrder, y: Array(bucketOrder.length).fill(hWR),
+                            type: 'scatter', mode: 'lines',
+                            line: { color: '#f5c563', width: 1.5, dash: 'dash' },
+                            hoverinfo: 'skip', showlegend: false
+                        }
+                    ], {
+                        title: {
+                            text: `${hourLabel(h)} — ${hWR.toFixed(0)}% WR overall (${hTrades} trades)`,
+                            x: 0.5, xanchor: 'center',
+                            font: { size: 11, color: '#cdd6f4' }
+                        },
+                        paper_bgcolor: '#313244', plot_bgcolor: '#313244',
+                        font: { color: '#cdd6f4', size: 10 },
+                        margin: { t: 40, b: 36, l: 42, r: 16 },
+                        xaxis: { gridcolor: '#45475a', tickfont: { size: 9 }, title: '' },
+                        yaxis: {
+                            gridcolor: '#45475a', tickfont: { size: 9 },
+                            range: [0, (maxWR || 60) + 18], title: ''
+                        },
+                        showlegend: false
+                    }, { responsive: true, displayModeBar: false });
+                });
             }
         }
 
