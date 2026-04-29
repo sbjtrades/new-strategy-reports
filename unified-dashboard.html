@@ -531,7 +531,7 @@
             <!-- CANDLE POSITION ANALYSIS -->
             <div class="section-header" style="margin-top:30px;margin-bottom:8px;">⏱ HOURLY CANDLE POSITION — Minutes Into New 1H Candle</div>
             <div style="background:#313244;border-left:4px solid #cba6f7;padding:14px 18px;border-radius:4px;margin-bottom:20px;font-size:0.85em;color:#cdd6f4;">
-                <strong style="color:#cba6f7;">Hypothesis:</strong> Trades entered in the first 10 minutes of a new hourly candle may fail more often — the HTF candle range is only 20–30 pts, making a 65% bias reading potentially misleading. The charts below test this directly.
+                <strong style="color:#cba6f7;">Hypothesis:</strong> Trades entered in the first 10 minutes of a new hourly candle may fail more often.
             </div>
             <div id="taCandlePositionInsight" style="margin-bottom:16px;"></div>
             <div class="chart-container" style="margin-bottom:20px;"><div id="taCandlePositionChart" style="height:340px;"></div></div>
@@ -3287,7 +3287,7 @@
 
                 const gridEl = document.getElementById('taCandleHourGrid');
                 gridEl.innerHTML = '';
-                gridEl.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;';
+                gridEl.style.cssText = 'display:grid;grid-template-columns:1fr;gap:16px;margin-top:4px;';
 
                 availHours.forEach(h => {
                     const hourData = byHour[h];
@@ -3306,7 +3306,7 @@
                     const chartId = `taCandleHour_${h.replace(':','')}`;
                     const card    = document.createElement('div');
                     card.style.cssText = 'background:#313244;border-radius:8px;padding:12px 12px 6px;';
-                    card.innerHTML = `<div id="${chartId}" style="height:230px;"></div>`;
+                    card.innerHTML = `<div id="${chartId}" style="height:280px;"></div>`;
                     gridEl.appendChild(card);
 
                     const maxWR = Math.max(...wr.filter(v => v > 0));
