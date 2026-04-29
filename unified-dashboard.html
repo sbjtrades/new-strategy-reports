@@ -3176,7 +3176,9 @@
                 // taBestDaysChart / taWorstDaysChart divs no longer used (replaced by tables above)
 
                 // ── CANDLE POSITION ANALYSIS ────────────────────────────────────
-                displayCandlePositionAnalysis(dashboardData.instruments[currentInstrument].candle_position_analysis);
+                const instrumentData = dashboardData.instruments[currentInstrument];
+                const periodCpa = getPeriodLevelData(instrumentData, 'candle_position_analysis');
+                displayCandlePositionAnalysis(periodCpa || instrumentData.candle_position_analysis, !!periodCpa);
 
             } catch(e) {
                 console.error('Error in displayTradeAnalysis:', e);
@@ -3184,7 +3186,7 @@
             }
         }
 
-        function displayCandlePositionAnalysis(cpa) {
+        function displayCandlePositionAnalysis(cpa, isFiltered) {
             if (!cpa || !cpa.by_minute_bucket || !Object.keys(cpa.by_minute_bucket).length) {
                 document.getElementById('taCandlePositionInsight').innerHTML = '<div style="color:#6c7086;padding:12px;">No candle position data available — regenerate dashboard_data.json.</div>';
                 return;
@@ -3192,6 +3194,8 @@
             const bucketOrder = cpa.bucket_order || ['0-9','10-19','20-29','30-39','40-49','50-59'];
             const byBucket = cpa.by_minute_bucket;
             const byHour   = cpa.by_hour_and_bucket;
+            const periodLabel = isFiltered ? getCurrentPeriodLabel() : null;
+            const periodNote  = periodLabel ? ` — ${periodLabel}` : ' — All Time';
 
             // ── Compute overall avg win rate to flag the early-candle effect ──
             const totalTrades = bucketOrder.reduce((s,b) => s + (byBucket[b]?.trades || 0), 0);
@@ -3204,7 +3208,7 @@
             const diffArrow   = diff < 0 ? '↓' : '↑';
             const insightHtml = earlyWR !== null ? `
                 <div style="background:#1e1e2e;padding:14px 18px;border-radius:6px;border-left:4px solid ${diffColor};display:flex;gap:24px;flex-wrap:wrap;">
-                    <div><div style="font-size:0.7em;color:#6c7086;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">0–9 Min Win Rate</div>
+                    <div><div style="font-size:0.7em;color:#6c7086;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">0–9 Min Win Rate${periodLabel ? ` (${periodLabel})` : ''}</div>
                     <div style="font-size:1.6em;font-weight:bold;color:${diffColor};">${earlyWR.toFixed(1)}%</div></div>
                     <div><div style="font-size:0.7em;color:#6c7086;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">vs Overall Avg</div>
                     <div style="font-size:1.6em;font-weight:bold;color:${diffColor};">${diffArrow}${Math.abs(diff)}%</div></div>
@@ -3262,7 +3266,7 @@
                     hovertemplate: 'Overall avg: %{y:.1f}%<extra></extra>'
                 }
             ], {
-                title: { text: 'Win Rate % by Minutes Into Hourly Candle — All Hours Combined', x: 0.5, xanchor: 'center', font: { size: 13 } },
+                title: { text: `Win Rate % by Minutes Into Hourly Candle${periodNote}`, x: 0.5, xanchor: 'center', font: { size: 13 } },
                 paper_bgcolor: '#313244', plot_bgcolor: '#313244', font: { color: '#cdd6f4' },
                 margin: { t: 50, b: 50, l: 60, r: 80 },
                 barmode: 'group',
