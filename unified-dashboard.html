@@ -927,6 +927,24 @@
                         <div class="summary-value">${contractSize}</div>
                         <div class="summary-detail">${currentInstrument === 'NQ/MNQ' ? 'MNQ' : 'MES'}</div>
                     </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Avg Daily Trades</span>
+                        <div class="summary-value">${summary.avg_daily_total != null ? summary.avg_daily_total : '—'}</div>
+                        <div class="summary-detail">per trading day</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Avg Daily Longs</span>
+                        <div class="summary-value" style="color:#89dceb">${summary.avg_daily_longs != null ? summary.avg_daily_longs : '—'}</div>
+                        <div class="summary-detail">longs per day</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="summary-label">Avg Daily Shorts</span>
+                        <div class="summary-value" style="color:#f9e2af">${summary.avg_daily_shorts != null ? summary.avg_daily_shorts : '—'}</div>
+                        <div class="summary-detail">shorts per day</div>
+                    </div>
                 `;
                 container.innerHTML = html;
             }
