@@ -433,8 +433,8 @@
                                 <th style="padding: 12px; text-align: left; color: #a6e3a1;">Quarter</th>
                                 <th style="padding: 12px; text-align: center; color: #89b4fa;">Entries</th>
                                 <th style="padding: 12px; text-align: center; color: #89b4fa;">Win%</th>
-                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Net P&L $</th>
-                                <th style="padding: 12px; text-align: center; color: #89b4fa;">Avg P&L $</th>
+                                <th id="quarterNetPnLHeader" style="padding: 12px; text-align: center; color: #89b4fa;">Net P&L $</th>
+                                <th id="quarterAvgPnLHeader" style="padding: 12px; text-align: center; color: #89b4fa;">Avg P&L $</th>
                                 <th style="padding: 12px; text-align: center; color: #89b4fa;">Total Pts</th>
                                 <th style="padding: 12px; text-align: center; color: #89b4fa;">Avg Pts</th>
                             </tr>
@@ -2059,14 +2059,21 @@
         function displayTradingQuarterTable(tradingQuarterData) {
             const tbody = document.getElementById('quarterTableBody');
             if (!tbody) return;
-            
+
+            // Update column headers dynamically
+            const netHdr = document.getElementById('quarterNetPnLHeader');
+            const avgHdr = document.getElementById('quarterAvgPnLHeader');
+            if (netHdr) netHdr.textContent = displayMode === 'pts' ? 'Net Points' : 'Net P&L $';
+            if (avgHdr) avgHdr.textContent = displayMode === 'pts' ? 'Avg Points' : 'Avg P&L $';
+
+            const ptVal = POINT_VALUES[currentInstrument] || 2;
             const quarters = [
                 { key: 'Q1 (09:30-11:30) Opening', display: 'Q1 (09:30-11:30) Opening' },
                 { key: 'Q2 (11:30-13:00) Lunch Approach', display: 'Q2 (11:30-13:00) Lunch Approach' },
                 { key: 'Q3 (13:00-15:00) Post-Lunch', display: 'Q3 (13:00-15:00) Post-Lunch' },
                 { key: 'Q4 (15:00-16:00) Close', display: 'Q4 (15:00-16:00) Close' }
             ];
-            
+
             let html = '';
             quarters.forEach(q => {
                 const data = tradingQuarterData[q.key] || {};
@@ -2074,25 +2081,27 @@
                 const wins = data.wins || 0;
                 const winPct = entries > 0 ? ((wins / entries) * 100).toFixed(1) : '0.0';
                 const pnl = data.pnl || 0;
-                const avgPnL = entries > 0 ? (pnl / entries).toFixed(0) : 0;
-                const totalPts = data.point_value || 0;
-                const avgPts = entries > 0 ? (totalPts / entries).toFixed(1) : 0;
-                
-                const pnlColor = pnl >= 0 ? '#a6e3a1' : '#f38ba8';
-                
+                const avgPnL = entries > 0 ? pnl / entries : 0;
+                // Compute pts from pnl (1-contract basis × contracts)
+                const totalPts = (pnl / ptVal) * selectedContracts;
+                const avgPts = entries > 0 ? totalPts / entries : 0;
+
+                const scaledPnl = scalePnL(pnl);
+                const pnlColor = scaledPnl >= 0 ? '#a6e3a1' : '#f38ba8';
+
                 html += `
                     <tr style="border-bottom: 1px solid #45475a;">
                         <td style="padding: 12px; color: #89b4fa;">${q.display}</td>
                         <td style="padding: 12px; text-align: center; color: #cdd6f4;">${entries.toLocaleString()}</td>
                         <td style="padding: 12px; text-align: center; color: ${winPct >= 45 ? '#a6e3a1' : '#f38ba8'};">${winPct}%</td>
-                        <td style="padding: 12px; text-align: center; color: ${pnlColor};">$${pnl.toLocaleString()}</td>
-                        <td style="padding: 12px; text-align: center; color: ${pnlColor};">$${avgPnL}</td>
+                        <td style="padding: 12px; text-align: center; color: ${pnlColor};">${fmtPnL(pnl)}</td>
+                        <td style="padding: 12px; text-align: center; color: ${pnlColor};">${fmtPnL(avgPnL)}</td>
                         <td style="padding: 12px; text-align: center; color: #cdd6f4;">${totalPts.toFixed(1)}</td>
-                        <td style="padding: 12px; text-align: center; color: #cdd6f4;">${avgPts}</td>
+                        <td style="padding: 12px; text-align: center; color: #cdd6f4;">${avgPts.toFixed(1)}</td>
                     </tr>
                 `;
             });
-            
+
             tbody.innerHTML = html;
         }
         
