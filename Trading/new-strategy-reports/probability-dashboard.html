@@ -25,14 +25,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 a{color:var(--green);text-decoration:none}
 
 /* ─── HEADER ─────────────────────────────── */
-header{text-align:center;padding:28px 20px 20px;border-bottom:1px solid var(--border)}
-header h1{font-size:clamp(1.4rem,3vw,2rem);letter-spacing:.08em;color:var(--text)}
+header{padding:18px 24px 14px;border-bottom:1px solid var(--border);text-align:center}
+.header-text{margin-bottom:12px}
+header h1{font-size:clamp(1.2rem,3.5vw,1.8rem);letter-spacing:.06em;color:var(--text)}
 header h1 span{color:var(--green)}
-.subtitle{color:var(--muted);font-size:.8rem;margin-top:6px;letter-spacing:.04em}
-.updated{color:var(--muted);font-size:.72rem;margin-top:4px}
+.subtitle{color:var(--muted);font-size:.78rem;margin-top:5px;letter-spacing:.04em}
+.header-controls{display:flex;flex-direction:column;align-items:center;gap:6px}
+.updated{color:var(--muted);font-size:.7rem}
 
 /* ─── INSTRUMENT TOGGLE ──────────────────── */
-.controls{display:flex;justify-content:center;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .toggle-group{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px}
 .toggle-btn{padding:5px 18px;border:none;border-radius:4px;background:transparent;color:var(--muted);font-family:var(--font);font-size:.8rem;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:all .15s}
 .toggle-btn.active{background:var(--green);color:#000}
@@ -47,6 +48,47 @@ header h1 span{color:var(--green)}
 /* ─── MAIN CONTENT ───────────────────────── */
 main{max-width:1400px;margin:0 auto;padding:20px}
 .loading{text-align:center;color:var(--muted);padding:60px;font-size:1rem}
+
+/* ─── DESKTOP LAYOUT ─────────────────────── */
+@media(min-width:1200px){
+  body{font-size:14px}
+  header{display:flex;align-items:center;text-align:left;padding:14px 48px;gap:28px}
+  .header-text{flex:1;margin-bottom:0}
+  header h1{font-size:1.35rem}
+  .subtitle{margin-top:3px}
+  .header-controls{align-items:flex-end}
+  .tab-nav{position:sticky;top:0;z-index:100;padding:0 36px}
+  .tab-btn{font-size:.88rem;padding:12px 28px}
+  main{padding:28px 48px;max-width:1600px}
+  .card{padding:18px 22px}
+  .card-label{font-size:.74rem;margin-bottom:12px}
+  .card-row{gap:16px;margin-bottom:16px}
+  .section-title{font-size:.78rem;margin:24px 0 10px}
+  .tab-header{margin-bottom:22px}
+  .tab-header h2{font-size:1.15rem}
+  .tab-header .meta{font-size:.82rem}
+  .stat-val{font-size:1.15rem}
+  .stat-item{padding:9px 8px;border-right-color:#3d4754}
+  .stat-label{font-size:.68rem}
+  .fill-bar-label{font-size:.8rem}
+  .fill-bar-track{height:11px}
+  .fill-bar-wrap{margin:9px 0}
+  .bar-track{height:7px}
+  .dow-row{margin:7px 0}
+  .dow-label{font-size:.8rem}
+  .dow-val,.pct-val{font-size:.88rem}
+  .time-label{font-size:.75rem}
+  .time-pct{font-size:.82rem}
+  .pivot-cell-val{font-size:1.3rem}
+  .pivot-cell-label{font-size:.72rem}
+  .pivot-cell{padding:13px}
+  table.dt{font-size:.86rem}
+  table.dt th{font-size:.74rem;padding:9px 14px}
+  table.dt td{padding:8px 14px}
+  .big-num{font-size:2.4rem}
+  .big-stat{font-size:1.6rem}
+  .n-note{font-size:.72rem}
+}
 
 /* ─── CARDS ──────────────────────────────── */
 .tab-header{margin-bottom:18px}
@@ -152,17 +194,18 @@ table.dt tr:last-child td{border-bottom:none}
 <body>
 
 <header>
-  <h1>📊 NQ / ES <span>Probability Dashboard</span></h1>
-  <div class="subtitle">OHLC · ALN · OR · IB · GAPS · LOI · PIVOTS · LADDERS</div>
-  <div class="updated" id="updated-line">Loading…</div>
-</header>
-
-<div class="controls">
-  <div class="toggle-group">
-    <button class="toggle-btn active" id="btn-mnq" onclick="switchInst('MNQ')">MNQ</button>
-    <button class="toggle-btn" id="btn-mes" onclick="switchInst('MES')">MES</button>
+  <div class="header-text">
+    <h1>📊 NQ / ES <span>Probability Dashboard</span></h1>
+    <div class="subtitle">OHLC · ALN · OR · IB · GAPS · LOI · PIVOTS · LADDERS</div>
   </div>
-</div>
+  <div class="header-controls">
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-mnq" onclick="switchInst('MNQ')">MNQ</button>
+      <button class="toggle-btn" id="btn-mes" onclick="switchInst('MES')">MES</button>
+    </div>
+    <div class="updated" id="updated-line">Loading…</div>
+  </div>
+</header>
 
 <nav class="tab-nav">
   <button class="tab-btn active" data-tab="ohlc" onclick="switchTab('ohlc')">OHLC</button>
@@ -261,12 +304,13 @@ function comma(v)  { return v != null ? Number(v).toLocaleString() : '—'; }
 
 function statBlock(s, unit='', dec=1) {
   if (!s) return '<span style="color:var(--muted)">—</span>';
+  const fv = v => dec === 0 ? comma(v) : n(v, dec);
   return `<div class="stat-grid">
-    <div class="stat-item"><div class="stat-val">${n(s.mean,dec)}${unit}</div><div class="stat-label">mean</div></div>
-    <div class="stat-item"><div class="stat-val">${n(s.median,dec)}${unit}</div><div class="stat-label">median</div></div>
-    <div class="stat-item"><div class="stat-val">${n(s.p25,dec)}${unit}</div><div class="stat-label">p25</div></div>
-    <div class="stat-item"><div class="stat-val">${n(s.p75,dec)}${unit}</div><div class="stat-label">p75</div></div>
-    <div class="stat-item"><div class="stat-val">${n(s.p90,dec)}${unit}</div><div class="stat-label">p90</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.mean)}${unit}</div><div class="stat-label">mean</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.median)}${unit}</div><div class="stat-label">median</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.p25)}${unit}</div><div class="stat-label">p25</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.p75)}${unit}</div><div class="stat-label">p75</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.p90)}${unit}</div><div class="stat-label">p90</div></div>
     <div class="stat-item"><div class="stat-val">${comma(s.n)}</div><div class="stat-label">n</div></div>
   </div>`;
 }
@@ -538,7 +582,7 @@ function renderOR(d) {
     }).join('')}
   </div>
 
-  ${d.or_volume ? `<div class="card" style="max-width:400px">
+  ${d.or_volume ? `<div class="card" style="max-width:520px">
     <div class="card-label">OR VOLUME</div>
     ${statBlock(d.or_volume,'',0)}
   </div>` : ''}`;
