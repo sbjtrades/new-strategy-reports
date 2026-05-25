@@ -46,7 +46,7 @@ header h1 span{color:var(--green)}
 .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
 
 /* ─── MAIN CONTENT ───────────────────────── */
-main{max-width:1400px;margin:0 auto;padding:20px}
+main{max-width:none;padding:20px}
 .loading{text-align:center;color:var(--muted);padding:60px;font-size:1rem}
 
 /* ─── DESKTOP LAYOUT ─────────────────────── */
@@ -59,7 +59,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
   .header-controls{align-items:flex-end}
   .tab-nav{position:sticky;top:0;z-index:100;padding:0 36px}
   .tab-btn{font-size:.88rem;padding:12px 28px}
-  main{padding:28px 48px;max-width:1600px}
+  main{padding:28px 48px;max-width:none}
   .card{padding:18px 22px}
   .card-label{font-size:.74rem;margin-bottom:12px}
   .card-row{gap:16px;margin-bottom:16px}
@@ -106,9 +106,9 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 .card-label{color:var(--muted);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
 
 /* ─── STAT BLOCKS ────────────────────────── */
-.stat-grid{display:flex;gap:0;flex-wrap:wrap}
-.stat-item{flex:1;min-width:60px;text-align:center;padding:6px 4px;border-right:1px solid var(--border)}
-.stat-item:last-child{border-right:none}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.stat-item{text-align:center;padding:6px 4px;border-right:1px solid var(--border)}
+.stat-item:nth-child(3n){border-right:none}
 .stat-val{font-size:1.05rem;font-weight:700;color:var(--text);line-height:1.2}
 .stat-label{color:var(--muted);font-size:.62rem;margin-top:2px;letter-spacing:.06em}
 .big-num{font-size:2rem;font-weight:700;color:var(--green);line-height:1.1}
