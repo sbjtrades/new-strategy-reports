@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NQ/MNQ Probability Dashboard</title>
+<title>NQ / ES Probability Dashboard</title>
 <style>
 :root {
   --bg:      #0d1117;
@@ -152,7 +152,7 @@ table.dt tr:last-child td{border-bottom:none}
 <body>
 
 <header>
-  <h1>📊 NQ/MNQ <span>Probability Dashboard</span></h1>
+  <h1>📊 NQ / ES <span>Probability Dashboard</span></h1>
   <div class="subtitle">OHLC · ALN · OR · IB · GAPS · LOI · PIVOTS · LADDERS</div>
   <div class="updated" id="updated-line">Loading…</div>
 </header>
@@ -187,6 +187,16 @@ const allData   = {};
 let loiSortCol  = 'pct_eth_tag';
 let loiSortDir  = -1; // -1=desc, 1=asc
 let loiExpandedRow = null;
+
+// Pivot LOI keys — shown in Pivots tab, filtered out of LOI table
+const PIVOT_LOI_KEYS = [
+  'w_piv','w_r1','w_r2','w_r3','w_s1','w_s2','w_s3',
+  'w_p_r1_mid','w_r1_r2_mid','w_r2_r3_mid',
+  'w_p_s1_mid','w_s1_s2_mid','w_s2_s3_mid',
+  'm_piv','m_r1','m_r2','m_r3','m_s1','m_s2','m_s3',
+  'm_p_r1_mid','m_r1_r2_mid','m_r2_r3_mid',
+  'm_p_s1_mid','m_s1_s2_mid','m_s2_s3_mid',
+];
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init() {
@@ -234,7 +244,7 @@ function renderTab(tab) {
     case 'ib':      el.innerHTML = renderIB(d.ib);       break;
     case 'gaps':    el.innerHTML = renderGaps(d.gaps);   break;
     case 'loi':     el.innerHTML = renderLOI(d.loi);     attachLOIHandlers(); break;
-    case 'pivots':  el.innerHTML = renderPivots(d.pivots); break;
+    case 'pivots':  el.innerHTML = renderPivots(d.pivots, d.loi); break;
     case 'ladders': el.innerHTML = renderLadders(d.ladders); break;
     default:        el.innerHTML = '<div class="loading">Unknown tab</div>';
   }
@@ -653,8 +663,8 @@ function renderLOI(d) {
   if (!d || !d.levels) return '<div class="loading">No LOI data</div>';
   const levels = d.levels;
 
-  // Sort by selected column
-  let rows = Object.entries(levels).map(([key, v]) => ({
+  // Sort by selected column — exclude pivot levels (shown in Pivots tab)
+  let rows = Object.entries(levels).filter(([key]) => !PIVOT_LOI_KEYS.includes(key)).map(([key, v]) => ({
     key,
     label: fmtLevel(key),
     eth:    v.pct_eth_tag    ?? -1,
@@ -744,7 +754,7 @@ function attachLOIHandlers() {
 }
 
 // ─── TAB: PIVOTS ─────────────────────────────────────────────────────────────
-function renderPivots(d) {
+function renderPivots(d, loiData) {
   if (!d) return '<div class="loading">No Pivots data</div>';
 
   function closeLocBar(dist) {
@@ -802,7 +812,50 @@ function renderPivots(d) {
       <div class="card-label">${scope==='d'?'DAILY':scope==='w'?'WEEKLY':'MONTHLY'} TOUCH RATES</div>
       ${touchGrid(scope)}
     </div>`).join('')}
-  </div>`;
+  </div>
+
+  ${pivotLoiTable('WEEKLY PIVOT LEVELS — Tag &amp; Close Rates',
+    ['w_r3','w_r2','w_r1','w_piv','w_s1','w_s2','w_s3',
+     'w_p_r1_mid','w_r1_r2_mid','w_r2_r3_mid','w_p_s1_mid','w_s1_s2_mid','w_s2_s3_mid'],
+    loiData)}
+
+  ${pivotLoiTable('MONTHLY PIVOT LEVELS — Tag &amp; Close Rates',
+    ['m_r3','m_r2','m_r1','m_piv','m_s1','m_s2','m_s3',
+     'm_p_r1_mid','m_r1_r2_mid','m_r2_r3_mid','m_p_s1_mid','m_s1_s2_mid','m_s2_s3_mid'],
+    loiData)}
+  `;
+
+  function pivotLoiTable(title, keys, loiData) {
+    if (!loiData || !loiData.levels) return '';
+    const lv = loiData.levels;
+    const fmt = v => v == null ? '—' : v + '%';
+    const rows = keys.map(k => {
+      const v = lv[k]; if (!v) return '';
+      return `<tr>
+        <td style="font-weight:700;color:var(--text)">${fmtLevel(k)}</td>
+        <td style="color:${pctColor(v.pct_eth_tag)}">${fmt(v.pct_eth_tag)}</td>
+        <td style="color:${pctColor(v.pct_rth_tag)}">${fmt(v.pct_rth_tag)}</td>
+        <td style="color:${pctColor(v.pct_close_above)}">${fmt(v.pct_close_above)}</td>
+        <td style="color:${pctColor(v.pct_breach_up)}">${fmt(v.pct_breach_up)}</td>
+        <td style="color:${pctColor(v.pct_breach_down)}">${fmt(v.pct_breach_down)}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <div class="section-title">${title}</div>
+    <div class="card">
+      <div class="table-wrap">
+      <table class="dt">
+        <thead><tr>
+          <th>LEVEL</th>
+          <th>ETH TAG %</th><th>RTH TAG %</th>
+          <th>CLOSE ABOVE %</th>
+          <th>BREACH UP %</th><th>BREACH DN %</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      </div>
+    </div>`;
+  }
 }
 
 // ─── TAB: LADDERS ────────────────────────────────────────────────────────────
