@@ -438,10 +438,10 @@ function renderOHLC(d, hist) {
     {key:'high',      label:'High',     format: (v,r) => `<span style="color:var(--green)">${fmtNum(v)}</span>`},
     {key:'low',       label:'Low',      format: (v,r) => `<span style="color:var(--red)">${fmtNum(v)}</span>`},
     {key:'close',     label:'Close',    format: fmtNum},
-    {key:'change_pct',label:'Chg %',    format: fmtChg},
     {key:'range',     label:'Range',    format: v => fmtNum(v) + ' pts'},
     {key:'volume',    label:'Volume',   format: fmtVol},
     {key:'direction', label:'Dir',      format: dirBadge},
+    {key:'change_pct',label:'Chg %',    format: fmtChg},
   ];
   const WEEKLY_COLS = [
     {key:'date',      label:'Week',     align:'left'},
@@ -449,9 +449,9 @@ function renderOHLC(d, hist) {
     {key:'high',      label:'High',     format: (v) => `<span style="color:var(--green)">${fmtNum(v)}</span>`},
     {key:'low',       label:'Low',      format: (v) => `<span style="color:var(--red)">${fmtNum(v)}</span>`},
     {key:'close',     label:'Close',    format: fmtNum},
-    {key:'change_pct',label:'Chg %',    format: fmtChg},
     {key:'range',     label:'Range',    format: v => fmtNum(v) + ' pts'},
     {key:'direction', label:'Dir',      format: dirBadge},
+    {key:'change_pct',label:'Chg %',    format: fmtChg},
   ];
   const MONTHLY_COLS = [
     {key:'date',      label:'Month',    align:'left'},
@@ -459,9 +459,9 @@ function renderOHLC(d, hist) {
     {key:'high',      label:'High',     format: (v) => `<span style="color:var(--green)">${fmtNum(v)}</span>`},
     {key:'low',       label:'Low',      format: (v) => `<span style="color:var(--red)">${fmtNum(v)}</span>`},
     {key:'close',     label:'Close',    format: fmtNum},
-    {key:'change_pct',label:'Chg %',    format: fmtChg},
     {key:'range',     label:'Range',    format: v => fmtNum(v) + ' pts'},
     {key:'direction', label:'Dir',      format: dirBadge},
+    {key:'change_pct',label:'Chg %',    format: fmtChg},
   ];
 
   const histSection = hist ? `

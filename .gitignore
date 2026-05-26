@@ -31,6 +31,8 @@ Trading/Datasets*/probability-dashboard/**
 !Trading/Datasets*/probability-dashboard/data/
 !Trading/Datasets*/probability-dashboard/data/stats/
 !Trading/Datasets*/probability-dashboard/data/stats/*.json
+!Trading/Datasets*/probability-dashboard/scripts/
+!Trading/Datasets*/probability-dashboard/scripts/*.py
 
 # Never track credentials
 Trading/Datasets*/probability-dashboard/data/*credentials*.json
