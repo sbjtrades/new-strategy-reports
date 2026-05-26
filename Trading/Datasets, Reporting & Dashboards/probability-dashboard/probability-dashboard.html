@@ -128,6 +128,16 @@ main{max-width:none;padding:20px}
 .dow-val,.pct-val,.time-pct{min-width:50px;text-align:right;font-size:.8rem;color:var(--text)}
 .time-count{color:var(--muted);font-size:.7rem;min-width:30px;text-align:right}
 .no-data{color:var(--muted);font-size:.78rem;padding:8px 0;font-style:italic}
+/* ─── TIME DIST: TOP5 + SPARKLINE ─────────── */
+.time-top5-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.time-rank{min-width:14px;color:var(--muted);font-size:.66rem;text-align:right}
+.time-slot{min-width:40px;color:var(--text);font-size:.74rem;font-variant-numeric:tabular-nums}
+.time-rest{color:var(--muted);font-size:.65rem;margin-top:3px;font-style:italic;padding-left:22px}
+.sparkline-wrap{margin-top:8px;padding-top:6px;border-top:1px solid var(--border)}
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:22px}
+.spark-bar{display:inline-block;width:5px;background:var(--border);border-radius:1px 1px 0 0;min-height:2px}
+.spark-bar.spark-top{background:var(--green)}
+.sparkline-labels{display:flex;justify-content:space-between;font-size:.6rem;color:var(--muted);margin-top:2px}
 
 /* ─── PROGRESS FILL BARS ─────────────────── */
 .fill-bar-wrap{margin:6px 0}
@@ -244,11 +254,12 @@ const PIVOT_LOI_KEYS = [
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init() {
   try {
+    const v = Date.now();
     const [mnq, mes, nqHist, esHist] = await Promise.all([
-      fetch('./data/stats/MNQ_stats.json').then(r => r.json()),
-      fetch('./data/stats/MES_stats.json').then(r => r.json()),
-      fetch('./data/stats/NQ_history.json').then(r => r.json()).catch(() => null),
-      fetch('./data/stats/ES_history.json').then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/MNQ_stats.json?v=${v}`).then(r => r.json()),
+      fetch(`./data/stats/MES_stats.json?v=${v}`).then(r => r.json()),
+      fetch(`./data/stats/NQ_history.json?v=${v}`).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/ES_history.json?v=${v}`).then(r => r.json()).catch(() => null),
     ]);
     allData['MNQ'] = mnq;
     allData['MES'] = mes;
@@ -350,16 +361,42 @@ function dowBars(obj, unit='', color) {
 
 function timeDist(dist) {
   if (!dist || !dist.length) return '<span class="no-data">no data</span>';
-  const max = Math.max(...dist.map(d => d.count));
-  return dist.map(d => {
-    const w = max > 0 ? (d.count / max * 90) : 0;
-    return `<div class="time-row">
-      <span class="time-label">${d.time}</span>
+  // Top-5 ranked + compact sparkline for full distribution
+  const sorted = [...dist].sort((a, b) => b.count - a.count);
+  const top5   = sorted.slice(0, 5);
+  const restPct = sorted.slice(5).reduce((s, d) => s + d.pct, 0);
+  const maxTop  = top5[0]?.count || 1;
+
+  const top5Html = top5.map((d, i) => {
+    const w = Math.round(d.count / maxTop * 80);
+    return `<div class="time-top5-row">
+      <span class="time-rank">${i+1}</span>
+      <span class="time-slot">${d.time}</span>
       <div class="bar-track"><div class="bar-fill" style="width:${w}%"></div></div>
       <span class="time-pct">${d.pct}%</span>
-      <span class="time-count">(${d.count})</span>
     </div>`;
   }).join('');
+
+  const restHtml = restPct > 0
+    ? `<div class="time-rest">+${restPct.toFixed(1)}% across remaining slots</div>` : '';
+
+  // Sparkline — full dist in chronological order (already sorted from generator)
+  const maxC = Math.max(...dist.map(d => d.count)) || 1;
+  const topSet = new Set(top5.map(d => d.time));
+  const bars = dist.map(d => {
+    const h = Math.max(2, Math.round(d.count / maxC * 20));
+    const cls = topSet.has(d.time) ? ' spark-top' : '';
+    return `<span class="spark-bar${cls}" style="height:${h}px" title="${d.time}: ${d.pct}%"></span>`;
+  }).join('');
+  const first = dist[0]?.time || '';
+  const mid   = dist[Math.floor(dist.length / 2)]?.time || '';
+  const last  = dist[dist.length - 1]?.time || '';
+  const sparkHtml = `<div class="sparkline-wrap">
+    <div class="sparkline">${bars}</div>
+    <div class="sparkline-labels"><span>${first}</span><span>${mid}</span><span>${last}</span></div>
+  </div>`;
+
+  return top5Html + restHtml + sparkHtml;
 }
 
 function pctColor(v) {
@@ -530,16 +567,48 @@ function renderALN(d) {
   const patClasses = {P1:'p1', P2:'p2', P3:'p3', P4:'p4'};
   const patColors  = {P1:'var(--blue)', P2:'var(--yellow)', P3:'var(--green)', P4:'var(--red)'};
 
+  const patNames = {
+    P1: 'London Engulfs Asia',
+    P2: 'Asia Engulfs London',
+    P3: 'Partial Engulf Up',
+    P4: 'Partial Engulf Down',
+  };
+  const patDesc = {
+    P1: 'London H > Asia H &amp; London L < Asia L — symmetric expansion',
+    P2: 'London H &lt; Asia H &amp; London L > Asia L — compression / coiling',
+    P3: 'London H > Asia H, London L stays inside — bullish lean',
+    P4: 'London L &lt; Asia L, London H stays inside — bearish lean',
+  };
+
   return `
   <div class="tab-header"><h2>ALN Sessions</h2><span class="meta">${d.n_days} sessions</span></div>
 
   <div class="card-row card-row-4">
     ${['P1','P2','P3','P4'].map(p => {
       const pdat = pd[p] || {count:0, pct:0};
+      const ppr  = pp[p];
       return `<div class="card pattern-card ${patClasses[p]}">
         <div class="card-label" style="color:${patColors[p]}">${p}</div>
+        <div style="color:${patColors[p]};font-weight:700;font-size:.88rem;margin-top:2px">${patNames[p]}</div>
+        <div style="color:var(--muted);font-size:.63rem;margin:3px 0 8px;line-height:1.35">${patDesc[p]}</div>
         <div class="big-num" style="color:${patColors[p]}">${pdat.pct}%</div>
         <div class="big-num-sub">${pdat.count} sessions</div>
+        ${ppr && ppr.pct_h_first != null ? `
+        <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+          <div style="font-size:.6rem;color:var(--muted);margin-bottom:5px;letter-spacing:.07em">IF FIRST BREAK IS:</div>
+          <div style="display:flex;gap:5px">
+            <div style="flex:1;background:rgba(255,255,255,.03);border-radius:4px;padding:5px 6px;border:1px solid var(--border)">
+              <div style="color:${patColors[p]};font-size:.7rem;font-weight:700">H 1st ${ppr.pct_h_first}%</div>
+              <div style="color:var(--muted);font-size:.62rem">L follows: <span style="color:${pctColor(ppr.if_h_first_pct_l_also)};font-weight:700">${pct(ppr.if_h_first_pct_l_also)}</span></div>
+              <div style="color:var(--muted);font-size:.58rem">n=${ppr.if_h_first_n}</div>
+            </div>
+            <div style="flex:1;background:rgba(255,255,255,.03);border-radius:4px;padding:5px 6px;border:1px solid var(--border)">
+              <div style="color:${patColors[p]};font-size:.7rem;font-weight:700">L 1st ${ppr.pct_l_first}%</div>
+              <div style="color:var(--muted);font-size:.62rem">H follows: <span style="color:${pctColor(ppr.if_l_first_pct_h_also)};font-weight:700">${pct(ppr.if_l_first_pct_h_also)}</span></div>
+              <div style="color:var(--muted);font-size:.58rem">n=${ppr.if_l_first_n}</div>
+            </div>
+          </div>
+        </div>` : ''}
       </div>`;
     }).join('')}
   </div>
@@ -598,6 +667,7 @@ function renderALN(d) {
         <th>Pattern</th><th>Count</th>
         <th>Lon H</th><th>Lon L</th><th>Lon Both</th>
         <th>Asia H</th><th>Asia L</th><th>Asia Both</th>
+        <th>H 1st %</th><th>If H→L</th><th>L 1st %</th><th>If L→H</th>
       </tr></thead>
       <tbody>
         ${['P1','P2','P3','P4'].map(p => {
@@ -611,12 +681,63 @@ function renderALN(d) {
             <td style="color:${pctColor(r.pct_broke_asia_h)}">${pct(r.pct_broke_asia_h)}</td>
             <td style="color:${pctColor(r.pct_broke_asia_l)}">${pct(r.pct_broke_asia_l)}</td>
             <td style="color:${pctColor(r.pct_broke_asia_both)}">${pct(r.pct_broke_asia_both)}</td>
+            <td style="color:var(--muted)">${pct(r.pct_h_first)}</td>
+            <td style="color:${pctColor(r.if_h_first_pct_l_also)};font-weight:700">${pct(r.if_h_first_pct_l_also)}<span style="color:var(--muted);font-size:.62rem;font-weight:400"> n=${r.if_h_first_n||0}</span></td>
+            <td style="color:var(--muted)">${pct(r.pct_l_first)}</td>
+            <td style="color:${pctColor(r.if_l_first_pct_h_also)};font-weight:700">${pct(r.if_l_first_pct_h_also)}<span style="color:var(--muted);font-size:.62rem;font-weight:400"> n=${r.if_l_first_n||0}</span></td>
           </tr>`;
         }).join('')}
       </tbody>
     </table>
     </div>
-  </div>`;
+    <div class="n-note">Conditional columns: "H 1st %" = sessions where London H broke before L. "If H→L" = % where L also broke when H was first. Low n = treat with caution.</div>
+  </div>
+
+  ${d.open_location_stats ? `
+  <div class="card">
+    <div class="card-label">NY OPEN LOCATION vs LONDON RANGE</div>
+    <div class="card-row card-row-4" style="margin-top:10px">
+      ${['above_range','upper_half','lower_half','below_range'].map(cat => {
+        const s = d.open_location_stats[cat];
+        if (!s) return '';
+        const label = {above_range:'Above Range', upper_half:'Upper Half', lower_half:'Lower Half', below_range:'Below Range'}[cat];
+        return `<div class="card" style="padding:10px 12px">
+          <div class="card-label">${label}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin:3px 0">n=${s.n}</div>
+          ${fillBar('Lon H broke', s.pct_broke_london_h)}
+          ${fillBar('Lon L broke', s.pct_broke_london_l)}
+        </div>`;
+      }).join('')}
+    </div>
+    ${d.pattern_open_location ? `
+    <div class="table-wrap" style="margin-top:12px">
+    <table class="dt">
+      <thead><tr>
+        <th>Pattern × Open Location</th>
+        <th>Above Range n</th><th>H %</th><th>L %</th>
+        <th>Upper Half n</th><th>H %</th><th>L %</th>
+        <th>Lower Half n</th><th>H %</th><th>L %</th>
+        <th>Below Range n</th><th>H %</th><th>L %</th>
+      </tr></thead>
+      <tbody>
+        ${['P1','P2','P3','P4'].map(p => {
+          const pol = d.pattern_open_location[p]; if (!pol) return '';
+          const cell = cat => {
+            const s = pol[cat]; if (!s) return '<td>—</td><td>—</td><td>—</td>';
+            return `<td style="color:var(--muted)">${s.n}</td>
+              <td style="color:${pctColor(s.pct_broke_london_h)}">${pct(s.pct_broke_london_h)}</td>
+              <td style="color:${pctColor(s.pct_broke_london_l)}">${pct(s.pct_broke_london_l)}</td>`;
+          };
+          return `<tr>
+            <td style="color:${patColors[p]};font-weight:700">${p}</td>
+            ${cell('above_range')}${cell('upper_half')}${cell('lower_half')}${cell('below_range')}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>` : ''}
+    <div class="n-note">NY open = daily open vs London range (london_l to london_h). Small n per cell — directional guide only.</div>
+  </div>` : ''}` ;
 }
 
 // ─── TAB: OR ─────────────────────────────────────────────────────────────────
