@@ -77,7 +77,9 @@ def build_weekly(rows, n=WEEKLY_ROWS):
     for row in rows:
         try:
             d = datetime.strptime(row["date"], "%Y-%m-%d")
-            # Monday of that week
+            # NQ futures: Sunday PM session is the open of the following week
+            if d.weekday() == 6:
+                d = d + timedelta(days=1)
             monday = (d - timedelta(days=d.weekday())).strftime("%Y-%m-%d")
             weeks[monday].append(row)
         except: pass

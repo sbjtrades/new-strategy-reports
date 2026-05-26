@@ -124,7 +124,9 @@ def aggregate_weekly(ohlc_df):
     """Group daily OHLC → weekly bars (oldest first)."""
     df = ohlc_df.copy()
     df["date"] = pd.to_datetime(df["date"])
-    df["week"] = df["date"].dt.to_period("W").dt.start_time.dt.strftime("%Y-%m-%d")
+    # NQ futures: Sunday PM session is the open of the following week — shift +1 day
+    date_adj = df["date"] + pd.to_timedelta((df["date"].dt.dayofweek == 6).astype(int), unit="D")
+    df["week"] = date_adj.dt.to_period("W").dt.start_time.dt.strftime("%Y-%m-%d")
 
     agg = df.groupby("week", sort=True).agg(
         open=("open",  "first"),

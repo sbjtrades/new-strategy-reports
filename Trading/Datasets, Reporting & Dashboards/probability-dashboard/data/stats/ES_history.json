@@ -114,43 +114,43 @@
   "weekly": [
     {
       "date": "2026-05-18",
-      "open": 7423.0,
+      "open": 7410.25,
       "high": 7524.0,
       "low": 7353.75,
       "close": 7491.0,
       "range": 170.25,
       "direction": "UP",
-      "change_pct": 0.879
+      "change_pct": 0.79
     },
     {
       "date": "2026-05-11",
-      "open": 7435.25,
+      "open": 7403.75,
       "high": 7540.0,
       "low": 7363.25,
-      "close": 7425.75,
+      "close": 7432.25,
       "range": 176.75,
-      "direction": "DOWN",
-      "change_pct": -0.148
+      "direction": "UP",
+      "change_pct": 0.179
     },
     {
       "date": "2026-05-04",
-      "open": 7228.0,
-      "high": 7454.0,
-      "low": 7223.5,
-      "close": 7436.75,
-      "range": 230.5,
+      "open": 7275.25,
+      "high": 7428.25,
+      "low": 7199.25,
+      "close": 7419.0,
+      "range": 229.0,
       "direction": "UP",
-      "change_pct": 2.856
+      "change_pct": 2.218
     },
     {
       "date": "2026-04-27",
-      "open": 7205.75,
+      "open": 7185.0,
       "high": 7300.75,
       "low": 7131.25,
-      "close": 7230.25,
+      "close": 7258.0,
       "range": 169.5,
       "direction": "UP",
-      "change_pct": 0.337
+      "change_pct": 0.879
     }
   ],
   "monthly": [
