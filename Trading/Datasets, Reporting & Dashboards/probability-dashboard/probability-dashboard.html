@@ -804,8 +804,22 @@ function renderOR(d) {
 function renderIB(d) {
   if (!d) return '<div class="loading">No IB data</div>';
   const dir = d.ib_break_dir_dist || {};
-  const extNote = d.pct_ib_ext_up25 != null ?
-    `<div class="n-note">Extension data: ~${d.n_days} sessions tracked; break time data from Nov 2025+</div>` : '';
+
+  // IB close half: directional bias by where IB closes
+  function closeHalfCard(half, label, color) {
+    const pctUp   = d[`ib_close_${half}_pct_break_up`]   ?? null;
+    const pctDown = d[`ib_close_${half}_pct_break_down`] ?? null;
+    const pctNone = d[`ib_close_${half}_pct_no_break`]   ?? null;
+    const n       = d[`ib_close_${half}_n`] ?? 0;
+    if (pctUp == null) return '';
+    return `
+      <div class="card">
+        <div class="card-label" style="color:${color}">${label} (${comma(n)} sessions)</div>
+        ${fillBar('Breaks UP',   pctUp,   'var(--green)')}
+        ${fillBar('Breaks DOWN', pctDown, 'var(--red)')}
+        ${fillBar('No Break',    pctNone, 'var(--muted)')}
+      </div>`;
+  }
 
   return `
   <div class="tab-header"><h2>Initial Balance</h2><span class="meta">${comma(d.n_days)} sessions</span></div>
@@ -820,16 +834,16 @@ function renderIB(d) {
       ${dowBars(d.ib_range_by_dow,' pts','var(--blue)')}
     </div>
     <div class="card">
-      <div class="card-label">IB BREAK DIRECTION (from Nov 2025)</div>
+      <div class="card-label">IB BREAK DIRECTION</div>
       ${Object.entries(dir).map(([k,v]) => fillBar(k, v.pct,
-        k==='UP' ? 'var(--green)' : k==='DOWN' ? 'var(--red)' : 'var(--muted)'
+        k==='H' || k==='UP' ? 'var(--green)' : k==='L' || k==='DOWN' ? 'var(--red)' : 'var(--muted)'
       )).join('')}
     </div>
   </div>
 
   <div class="card-row card-row-2">
     <div class="card">
-      <div class="card-label">IB BREAK (overall) — from Nov 2025</div>
+      <div class="card-label">IB BREAK RATE</div>
       ${fillBar('IB Broke', d.pct_ib_break)}
       <div style="margin-top:12px">
         <div class="card-label" style="margin-bottom:8px">BREAK TIME</div>
@@ -837,7 +851,7 @@ function renderIB(d) {
       </div>
     </div>
     <div class="card">
-      <div class="card-label">IB EXTENSION TOUCH RATES — from Nov 2025</div>
+      <div class="card-label">IB EXTENSION TOUCH RATES</div>
       <div class="card-row card-row-2" style="margin-top:8px;gap:8px">
         <div>
           <div style="color:var(--green);font-size:.7rem;margin-bottom:6px">▲ UP EXTENSIONS</div>
@@ -848,8 +862,12 @@ function renderIB(d) {
           ${[25,50,75,100].map(l => fillBar(`-${l}%`, d[`pct_ib_ext_dn${l}`],'var(--red)')).join('')}
         </div>
       </div>
-      ${extNote}
     </div>
+  </div>
+
+  <div class="card-row card-row-2">
+    ${closeHalfCard('upper', '▲ IB CLOSES IN UPPER HALF — break direction', 'var(--green)')}
+    ${closeHalfCard('lower', '▼ IB CLOSES IN LOWER HALF — break direction', 'var(--red)')}
   </div>`;
 }
 
