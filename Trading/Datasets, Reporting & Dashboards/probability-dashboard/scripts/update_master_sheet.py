@@ -75,8 +75,14 @@ def clean_val(v):
     return str(v)
 
 
-def df_to_rows(df):
-    """Convert DataFrame → [headers, row, row, ...] ready for gspread.update()."""
+def df_to_rows(df, date_col="date"):
+    """Convert DataFrame → [headers, row, row, ...] ready for gspread.update().
+    Sorts by date descending (newest first) if the date column exists."""
+    if date_col in df.columns:
+        df = df.copy()
+        df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
+        df = df.sort_values(date_col, ascending=False).reset_index(drop=True)
+        df[date_col] = df[date_col].dt.strftime("%Y-%m-%d")
     headers = list(df.columns)
     data = [[clean_val(v) for v in row] for row in df.itertuples(index=False)]
     return [headers] + data
