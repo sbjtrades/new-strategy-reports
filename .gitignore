@@ -32,6 +32,10 @@ Trading/Datasets*/probability-dashboard/**
 !Trading/Datasets*/probability-dashboard/data/stats/
 !Trading/Datasets*/probability-dashboard/data/stats/*.json
 
+# Never track credentials
+Trading/Datasets*/probability-dashboard/data/*credentials*.json
+Trading/Datasets*/probability-dashboard/data/*google-cloud-api*.json
+
 Trading/Datasets*/or-dashboard-v2/**
 !Trading/Datasets*/or-dashboard-v2/unified-dashboard.html
 !Trading/Datasets*/or-dashboard-v2/dashboard_data.json
