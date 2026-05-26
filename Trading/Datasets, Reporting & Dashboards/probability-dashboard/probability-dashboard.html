@@ -316,6 +316,7 @@ function n(v, dec=1) {
 }
 function pct(v)    { return v === null || v === undefined ? '—' : v + '%'; }
 function comma(v)  { return v != null ? Number(v).toLocaleString() : '—'; }
+function cnt(pctVal, nTotal) { if (pctVal == null || nTotal == null) return null; return Math.round(pctVal / 100 * nTotal); }
 
 function statBlock(s, unit='', dec=1) {
   if (!s) return '<span style="color:var(--muted)">—</span>';
@@ -330,11 +331,12 @@ function statBlock(s, unit='', dec=1) {
   </div>`;
 }
 
-function fillBar(label, pctVal, color) {
+function fillBar(label, pctVal, color, count) {
   const w = Math.min(pctVal || 0, 100);
   const c = color || (w>=70?'var(--green)':w>=45?'var(--gdim)':w>=25?'var(--yellow)':'var(--muted)');
+  const countBadge = count != null ? `<span style="color:var(--muted);font-size:.75em;font-weight:400;margin-left:4px">(${comma(count)})</span>` : '';
   return `<div class="fill-bar-wrap">
-    <div class="fill-bar-label"><span>${label}</span><span style="color:${c};font-weight:700">${pct(pctVal)}</span></div>
+    <div class="fill-bar-label"><span>${label}</span><span style="color:${c};font-weight:700">${pct(pctVal)}${countBadge}</span></div>
     <div class="fill-bar-track"><div class="fill-bar-fill" style="width:${w}%;background:${c}"></div></div>
   </div>`;
 }
@@ -628,15 +630,15 @@ function renderALN(d) {
   <div class="card-row card-row-2">
     <div class="card">
       <div class="card-label">LONDON BREAKS (NY session)</div>
-      ${fillBar('London H broke', d.pct_broke_london_h)}
-      ${fillBar('London L broke', d.pct_broke_london_l)}
-      ${fillBar('Both sides', d.pct_broke_london_both)}
+      ${fillBar('London H broke', d.pct_broke_london_h, null, cnt(d.pct_broke_london_h, d.n_days))}
+      ${fillBar('London L broke', d.pct_broke_london_l, null, cnt(d.pct_broke_london_l, d.n_days))}
+      ${fillBar('Both sides', d.pct_broke_london_both, null, cnt(d.pct_broke_london_both, d.n_days))}
     </div>
     <div class="card">
       <div class="card-label">ASIA BREAKS (NY session)</div>
-      ${fillBar('Asia H broke', d.pct_broke_asia_h)}
-      ${fillBar('Asia L broke', d.pct_broke_asia_l)}
-      ${fillBar('Both sides', d.pct_broke_asia_both)}
+      ${fillBar('Asia H broke', d.pct_broke_asia_h, null, cnt(d.pct_broke_asia_h, d.n_days))}
+      ${fillBar('Asia L broke', d.pct_broke_asia_l, null, cnt(d.pct_broke_asia_l, d.n_days))}
+      ${fillBar('Both sides', d.pct_broke_asia_both, null, cnt(d.pct_broke_asia_both, d.n_days))}
     </div>
   </div>
 
@@ -704,8 +706,8 @@ function renderALN(d) {
         return `<div class="card" style="padding:10px 12px">
           <div class="card-label">${label}</div>
           <div style="font-size:.75rem;color:var(--muted);margin:3px 0">n=${s.n}</div>
-          ${fillBar('Lon H broke', s.pct_broke_london_h)}
-          ${fillBar('Lon L broke', s.pct_broke_london_l)}
+          ${fillBar('Lon H broke', s.pct_broke_london_h, null, cnt(s.pct_broke_london_h, s.n))}
+          ${fillBar('Lon L broke', s.pct_broke_london_l, null, cnt(s.pct_broke_london_l, s.n))}
         </div>`;
       }).join('')}
     </div>
@@ -772,7 +774,7 @@ function renderOR(d) {
     </div>
     <div class="card">
       <div class="card-label">OR BREAK RATE &amp; TIME</div>
-      ${fillBar('OR Broke', d.pct_or_break)}
+      ${fillBar('OR Broke', d.pct_or_break, null, cnt(d.pct_or_break, d.n_days))}
       ${d.or_break_time_dist && d.or_break_time_dist.length ? `
         <div style="margin-top:12px"><div class="card-label" style="margin-bottom:8px">BREAK TIME DISTRIBUTION</div>
         ${timeDist(d.or_break_time_dist)}</div>
@@ -786,7 +788,7 @@ function renderOR(d) {
       const dist = d[`or_${tf}_break_time_dist`];
       return `<div class="card">
         <div class="card-label">TF${i+1} BREAK</div>
-        ${fillBar(`TF${i+1} Broke`, breakRate)}
+        ${fillBar(`TF${i+1} Broke`, breakRate, null, cnt(breakRate, d.n_days))}
         <div style="margin-top:10px">
           ${timeDist(dist)}
         </div>
@@ -815,9 +817,9 @@ function renderIB(d) {
     return `
       <div class="card">
         <div class="card-label" style="color:${color}">${label} (${comma(n)} sessions)</div>
-        ${fillBar('Breaks UP',   pctUp,   'var(--green)')}
-        ${fillBar('Breaks DOWN', pctDown, 'var(--red)')}
-        ${fillBar('No Break',    pctNone, 'var(--muted)')}
+        ${fillBar('Breaks UP',   pctUp,   'var(--green)', cnt(pctUp,   n))}
+        ${fillBar('Breaks DOWN', pctDown, 'var(--red)',   cnt(pctDown, n))}
+        ${fillBar('No Break',    pctNone, 'var(--muted)', cnt(pctNone, n))}
       </div>`;
   }
 
@@ -836,7 +838,8 @@ function renderIB(d) {
     <div class="card">
       <div class="card-label">IB BREAK DIRECTION</div>
       ${Object.entries(dir).map(([k,v]) => fillBar(k, v.pct,
-        k==='H' || k==='UP' ? 'var(--green)' : k==='L' || k==='DOWN' ? 'var(--red)' : 'var(--muted)'
+        k==='H' || k==='UP' ? 'var(--green)' : k==='L' || k==='DOWN' ? 'var(--red)' : 'var(--muted)',
+        v.count
       )).join('')}
     </div>
   </div>
@@ -844,7 +847,7 @@ function renderIB(d) {
   <div class="card-row card-row-2">
     <div class="card">
       <div class="card-label">IB BREAK RATE</div>
-      ${fillBar('IB Broke', d.pct_ib_break)}
+      ${fillBar('IB Broke', d.pct_ib_break, null, cnt(d.pct_ib_break, d.n_days))}
       <div style="margin-top:12px">
         <div class="card-label" style="margin-bottom:8px">BREAK TIME</div>
         ${timeDist(d.ib_break_time_dist)}
@@ -855,11 +858,11 @@ function renderIB(d) {
       <div class="card-row card-row-2" style="margin-top:8px;gap:8px">
         <div>
           <div style="color:var(--green);font-size:.7rem;margin-bottom:6px">▲ UP EXTENSIONS</div>
-          ${[25,50,75,100].map(l => fillBar(`+${l}%`, d[`pct_ib_ext_up${l}`])).join('')}
+          ${[25,50,75,100].map(l => fillBar(`+${l}%`, d[`pct_ib_ext_up${l}`], null, cnt(d[`pct_ib_ext_up${l}`], d.n_days))).join('')}
         </div>
         <div>
           <div style="color:var(--red);font-size:.7rem;margin-bottom:6px">▼ DOWN EXTENSIONS</div>
-          ${[25,50,75,100].map(l => fillBar(`-${l}%`, d[`pct_ib_ext_dn${l}`],'var(--red)')).join('')}
+          ${[25,50,75,100].map(l => fillBar(`-${l}%`, d[`pct_ib_ext_dn${l}`], 'var(--red)', cnt(d[`pct_ib_ext_dn${l}`], d.n_days))).join('')}
         </div>
       </div>
     </div>
@@ -887,16 +890,16 @@ function renderGaps(d) {
     </div>
     <div class="card">
       <div class="card-label">GAP DIRECTION</div>
-      ${fillBar('Gap UP',   dir.up?.pct,   'var(--green)')}
-      ${fillBar('Gap DOWN', dir.down?.pct, 'var(--red)')}
-      ${fillBar('Flat',     dir.flat?.pct, 'var(--muted)')}
+      ${fillBar('Gap UP',   dir.up?.pct,   'var(--green)', dir.up?.count)}
+      ${fillBar('Gap DOWN', dir.down?.pct, 'var(--red)',   dir.down?.count)}
+      ${fillBar('Flat',     dir.flat?.pct, 'var(--muted)', dir.flat?.count)}
     </div>
     <div class="card">
       <div class="card-label">FILL RATES (overall)</div>
-      ${fillBar('25% fill', d.pct_fill_25)}
-      ${fillBar('50% fill', d.pct_fill_50)}
-      ${fillBar('75% fill', d.pct_fill_75)}
-      ${fillBar('100% fill', d.pct_fill_100)}
+      ${fillBar('25% fill',  d.pct_fill_25,  null, cnt(d.pct_fill_25,  d.n_days))}
+      ${fillBar('50% fill',  d.pct_fill_50,  null, cnt(d.pct_fill_50,  d.n_days))}
+      ${fillBar('75% fill',  d.pct_fill_75,  null, cnt(d.pct_fill_75,  d.n_days))}
+      ${fillBar('100% fill', d.pct_fill_100, null, cnt(d.pct_fill_100, d.n_days))}
     </div>
   </div>
 
