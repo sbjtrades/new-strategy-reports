@@ -88,8 +88,15 @@ def df_to_rows(df, date_col="date"):
     return [headers] + data
 
 
+HEADER_FMT = {
+    "backgroundColor":    {"red": 0.98, "green": 0.82, "blue": 0.25},   # golden yellow
+    "textFormat":         {"bold": True, "foregroundColor": {"red": 0.0, "green": 0.0, "blue": 0.0}},
+    "horizontalAlignment": "CENTER",
+}
+
+
 def write_tab(ws, data, tab_name):
-    """Clear a worksheet and write data (header + rows)."""
+    """Clear a worksheet, write data (header + rows), format header row yellow."""
     n_rows = len(data)
     n_cols = len(data[0]) if data else 1
 
@@ -102,6 +109,11 @@ def write_tab(ws, data, tab_name):
         time.sleep(0.3)
 
     ws.update(data, value_input_option="USER_ENTERED")
+    time.sleep(0.3)
+
+    # Yellow header
+    ws.format("1:1", HEADER_FMT)
+
     print(f"  ✓  {tab_name:<18}  {n_rows - 1:>5} rows  ×  {n_cols} cols")
     time.sleep(PAUSE)
 
