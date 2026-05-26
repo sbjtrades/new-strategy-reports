@@ -1,0 +1,37 @@
+# Ignore everything on Desktop by default
+*
+.*
+
+# Only allow the specific dashboard files we want to track
+!.gitignore
+!index.html
+!PROJECT_OVERVIEW.md
+!Trading/
+Trading/*
+!Trading/probability-dashboard/
+!Trading/or-dashboard-v2/
+!Trading/Datasets*/
+Trading/Datasets*/*
+!Trading/Datasets*/probability-dashboard/
+!Trading/Datasets*/or-dashboard-v2/
+
+# Allow dashboard file contents
+Trading/probability-dashboard/**
+!Trading/probability-dashboard/probability-dashboard.html
+!Trading/probability-dashboard/data/
+!Trading/probability-dashboard/data/stats/
+!Trading/probability-dashboard/data/stats/*.json
+
+Trading/or-dashboard-v2/**
+!Trading/or-dashboard-v2/unified-dashboard.html
+!Trading/or-dashboard-v2/dashboard_data.json
+
+Trading/Datasets*/probability-dashboard/**
+!Trading/Datasets*/probability-dashboard/probability-dashboard.html
+!Trading/Datasets*/probability-dashboard/data/
+!Trading/Datasets*/probability-dashboard/data/stats/
+!Trading/Datasets*/probability-dashboard/data/stats/*.json
+
+Trading/Datasets*/or-dashboard-v2/**
+!Trading/Datasets*/or-dashboard-v2/unified-dashboard.html
+!Trading/Datasets*/or-dashboard-v2/dashboard_data.json
