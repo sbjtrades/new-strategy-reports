@@ -139,7 +139,7 @@ main{max-width:none;padding:20px}
 /* ─── TABLES ─────────────────────────────── */
 .table-wrap{overflow-x:auto;margin-top:8px}
 table.dt{width:100%;border-collapse:collapse;font-size:.78rem}
-table.dt th{color:var(--muted);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none}
+table.dt th{color:var(--yellow);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none}
 table.dt th:hover{color:var(--text)}
 table.dt th.sorted{color:var(--green)}
 table.dt th.sorted::after{content:' ▼';font-size:.6rem}
@@ -424,7 +424,8 @@ function fmtChg(v) {
     const n = parseFloat(v);
     const col = n >= 0 ? 'var(--green)' : 'var(--red)';
     const sign = n >= 0 ? '+' : '';
-    return `<span style="color:${col};font-weight:600">${sign}${n.toFixed(2)}%</span>`;
+    const fmt = Number(n.toFixed(3)).toString();
+    return `<span style="color:${col};font-weight:600">${sign}${fmt}%</span>`;
   } catch { return v; }
 }
 
