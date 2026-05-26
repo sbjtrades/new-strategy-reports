@@ -21,7 +21,7 @@
   --font:    'Courier New', 'SF Mono', monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh}
 a{color:var(--green);text-decoration:none}
 
 /* ─── HEADER ─────────────────────────────── */
@@ -51,7 +51,7 @@ main{max-width:none;padding:20px}
 
 /* ─── DESKTOP LAYOUT ─────────────────────── */
 @media(min-width:1200px){
-  body{font-size:14px}
+  body{font-size:16px}
   header{display:flex;align-items:center;text-align:left;padding:14px 48px;gap:28px}
   .header-text{flex:1;margin-bottom:0}
   header h1{font-size:1.35rem}
@@ -312,10 +312,10 @@ function statBlock(s, unit='', dec=1) {
   return `<div class="stat-grid">
     <div class="stat-item"><div class="stat-val">${fv(s.mean)}${unit}</div><div class="stat-label">mean</div></div>
     <div class="stat-item"><div class="stat-val">${fv(s.median)}${unit}</div><div class="stat-label">median</div></div>
-    <div class="stat-item"><div class="stat-val">${fv(s.p25)}${unit}</div><div class="stat-label">p25</div></div>
-    <div class="stat-item"><div class="stat-val">${fv(s.p75)}${unit}</div><div class="stat-label">p75</div></div>
-    <div class="stat-item"><div class="stat-val">${fv(s.p90)}${unit}</div><div class="stat-label">p90</div></div>
-    <div class="stat-item"><div class="stat-val">${comma(s.n)}</div><div class="stat-label">n</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.p25)}${unit}</div><div class="stat-label">25th %ile</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.p75)}${unit}</div><div class="stat-label">75th %ile</div></div>
+    <div class="stat-item"><div class="stat-val">${fv(s.p90)}${unit}</div><div class="stat-label">90th %ile</div></div>
+    <div class="stat-item"><div class="stat-val">${comma(s.n)}</div><div class="stat-label">sessions</div></div>
   </div>`;
 }
 
@@ -595,7 +595,7 @@ function renderALN(d) {
     <div class="table-wrap">
     <table class="dt">
       <thead><tr>
-        <th>Pattern</th><th>n</th>
+        <th>Pattern</th><th>Count</th>
         <th>Lon H</th><th>Lon L</th><th>Lon Both</th>
         <th>Asia H</th><th>Asia L</th><th>Asia Both</th>
       </tr></thead>
@@ -773,7 +773,7 @@ function renderGaps(d) {
     <div class="table-wrap">
     <table class="dt">
       <thead><tr>
-        <th>Size</th><th>n</th><th>% of All</th><th>Mean Pts</th>
+        <th>Size</th><th>Count</th><th>% of All</th><th>Mean Pts</th>
         <th>25% Fill</th><th>50% Fill</th><th>75% Fill</th><th>100% Fill</th>
       </tr></thead>
       <tbody>
