@@ -1,11 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=unified-dashboard.html">
-    <title>30-Sec OR Strategy Dashboard</title>
+  <meta charset="UTF-8">
+  <title>SBJ Trading Dashboards</title>
+  <style>
+    body{margin:0;background:#1e1e2e;color:#cdd6f4;font-family:'Courier New',monospace;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .wrap{text-align:center;max-width:600px;padding:40px 24px}
+    h1{color:#a6e3a1;font-size:1.6rem;margin:0 0 8px}
+    .sub{color:#6c7086;font-size:.85rem;margin-bottom:40px;letter-spacing:.08em}
+    .card{background:#2a2a3e;border:1px solid #313244;border-radius:10px;padding:24px 28px;margin-bottom:16px;text-align:left;text-decoration:none;display:block;transition:border-color .2s}
+    .card:hover{border-color:#a6e3a1}
+    .card-title{color:#a6e3a1;font-size:1rem;font-weight:700;margin-bottom:6px}
+    .card-desc{color:#9399b2;font-size:.82rem;line-height:1.5}
+  </style>
 </head>
 <body>
-    <p>Redirecting to <a href="unified-dashboard.html">dashboard</a>…</p>
+  <div class="wrap">
+    <h1>📊 SBJ Trading Dashboards</h1>
+    <div class="sub">NQ / ES · MNQ / MES · Futures</div>
+    <a class="card" href="Trading/probability-dashboard/probability-dashboard.html">
+      <div class="card-title">NQ / ES Probability Dashboard</div>
+      <div class="card-desc">OHLC · ALN Sessions · Opening Range · Initial Balance · Gaps · LOI · Pivots · Ladders</div>
+    </a>
+    <a class="card" href="Trading/or-dashboard-v2/unified-dashboard.html">
+      <div class="card-title">30 Sec OR Dashboard V2</div>
+      <div class="card-desc">Opening range rotation analysis · 30-second bar strategy · MNQ performance metrics</div>
+    </a>
+  </div>
 </body>
 </html>
