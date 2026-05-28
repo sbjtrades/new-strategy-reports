@@ -113,6 +113,17 @@ main{max-width:none;padding:20px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
 .card-label{color:var(--muted);font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
 
+/* ─── INSIGHTS CARD ──────────────────────── */
+.insights-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 16px;margin-bottom:16px}
+.insights-card .card-label{margin-bottom:8px}
+.insights-list{list-style:none;padding:0;margin:0}
+.insights-list li{font-size:.78rem;padding:4px 0 4px 14px;position:relative;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.4;color:var(--muted)}
+.insights-list li:last-child{border-bottom:none}
+.insights-list li::before{content:'▸';position:absolute;left:0;opacity:.5}
+.insights-list li.tone-up{color:var(--green)}
+.insights-list li.tone-down{color:var(--red)}
+.insights-list li.tone-neutral{color:var(--muted)}
+
 /* ─── STAT BLOCKS ────────────────────────── */
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
 .stat-item{text-align:center;padding:6px 4px;border-right:1px solid var(--border)}
@@ -254,6 +265,7 @@ table.dt tr:last-child td{border-bottom:none}
 let currentInst = 'MNQ';
 let currentTab  = 'ohlc';
 const allData   = {};
+const allTakeaways = {};
 let loiSortCol  = 'pct_eth_tag';
 let loiSortDir  = -1; // -1=desc, 1=asc
 let loiExpandedRow = null;
@@ -274,16 +286,20 @@ const PIVOT_LOI_KEYS = [
 async function init() {
   try {
     const v = Date.now();
-    const [mnq, mes, nqHist, esHist] = await Promise.all([
+    const [mnq, mes, nqHist, esHist, mnqTw, mesTw] = await Promise.all([
       fetch(`./data/stats/MNQ_stats.json?v=${v}`).then(r => r.json()),
       fetch(`./data/stats/MES_stats.json?v=${v}`).then(r => r.json()),
       fetch(`./data/stats/NQ_history.json?v=${v}`).then(r => r.json()).catch(() => null),
       fetch(`./data/stats/ES_history.json?v=${v}`).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/MNQ_takeaways.json?v=${v}`).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/MES_takeaways.json?v=${v}`).then(r => r.json()).catch(() => null),
     ]);
     allData['MNQ'] = mnq;
     allData['MES'] = mes;
     if (nqHist) allData['MNQ'].history = nqHist;
     if (esHist) allData['MES'].history = esHist;
+    if (mnqTw) allTakeaways['MNQ'] = mnqTw;
+    if (mesTw) allTakeaways['MES'] = mesTw;
     document.getElementById('updated-line').textContent =
       'Last updated: ' + new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
     renderTab(currentTab);
@@ -323,20 +339,32 @@ function metaLine(nDays) {
   return `${s} <span style="color:var(--border);margin:0 3px">·</span> <span style="opacity:.6">${winMeta.from} – ${winMeta.to}</span>`;
 }
 
+function renderInsightsCard(tabKey) {
+  const data = allTakeaways[currentInst];
+  if (!data) return '';
+  const items = data.tabs?.[tabKey];
+  if (!items || items.length === 0) return '';
+  const rows = items.map(it =>
+    `<li class="tone-${it.tone || 'neutral'}">${it.text}</li>`
+  ).join('');
+  return `<div class="insights-card"><div class="card-label">KEY INSIGHTS — LAST 30 DAYS VS HISTORICAL</div><ul class="insights-list">${rows}</ul></div>`;
+}
+
 function renderTab(tab) {
   const raw = allData[currentInst];
   if (!raw) return;
   const win = raw.windows?.[activeWindow] ?? raw;
   winMeta = win._meta || null;
   const el = document.getElementById('tab-content');
+  const ins = renderInsightsCard(tab);
   switch(tab) {
-    case 'ohlc':    el.innerHTML = renderOHLC(win.ohlc, raw.history);    break;
-    case 'aln':     el.innerHTML = renderALN(win.aln);     break;
-    case 'or':      el.innerHTML = renderOR(win.or);       break;
-    case 'ib':      el.innerHTML = renderIB(win.ib);       break;
-    case 'gaps':    el.innerHTML = renderGaps(win.gaps);   break;
-    case 'loi':     el.innerHTML = renderLOI(win.loi);     attachLOIHandlers(); break;
-    case 'pivots':  el.innerHTML = renderPivots(win.pivots, win.loi); break;
+    case 'ohlc':    el.innerHTML = ins + renderOHLC(win.ohlc, raw.history);    break;
+    case 'aln':     el.innerHTML = ins + renderALN(win.aln);     break;
+    case 'or':      el.innerHTML = ins + renderOR(win.or);       break;
+    case 'ib':      el.innerHTML = ins + renderIB(win.ib);       break;
+    case 'gaps':    el.innerHTML = ins + renderGaps(win.gaps);   break;
+    case 'loi':     el.innerHTML = ins + renderLOI(win.loi);     attachLOIHandlers(); break;
+    case 'pivots':  el.innerHTML = ins + renderPivots(win.pivots, win.loi); break;
     case 'ladders': el.innerHTML = renderLadders(win.ladders); break;
     default:        el.innerHTML = '<div class="loading">Unknown tab</div>';
   }
