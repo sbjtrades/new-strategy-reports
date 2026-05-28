@@ -45,6 +45,13 @@ header h1 span{color:var(--green)}
 .tab-btn:hover{color:var(--text)}
 .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
 
+/* ─── WINDOW FILTER ─────────────────────────── */
+.win-bar{display:flex;align-items:center;gap:6px;padding:7px 20px;border-bottom:1px solid var(--border);background:var(--surface)}
+.win-bar-label{color:var(--muted);font-size:.7rem;font-weight:700;letter-spacing:.08em;margin-right:4px}
+.win-btn{padding:3px 11px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);font-family:var(--font);font-size:.72rem;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:all .15s}
+.win-btn:hover{color:var(--text);border-color:var(--text)}
+.win-btn.active{color:var(--green);border-color:var(--green);background:rgba(74,222,128,.08)}
+
 /* ─── MAIN CONTENT ───────────────────────── */
 main{max-width:none;padding:20px}
 .loading{text-align:center;color:var(--muted);padding:60px;font-size:1rem}
@@ -228,6 +235,15 @@ table.dt tr:last-child td{border-bottom:none}
   <button class="tab-btn" data-tab="ladders" onclick="switchTab('ladders')">LADDERS</button>
 </nav>
 
+<div class="win-bar">
+  <span class="win-bar-label">PERIOD</span>
+  <button class="win-btn active" data-win="all" onclick="switchWindow('all')">ALL</button>
+  <button class="win-btn" data-win="6m"  onclick="switchWindow('6m')">6M</button>
+  <button class="win-btn" data-win="3m"  onclick="switchWindow('3m')">3M</button>
+  <button class="win-btn" data-win="1m"  onclick="switchWindow('1m')">1M</button>
+  <button class="win-btn" data-win="1w"  onclick="switchWindow('1w')">1W</button>
+</div>
+
 <main id="tab-content">
   <div class="loading">Loading data…</div>
 </main>
@@ -240,6 +256,7 @@ const allData   = {};
 let loiSortCol  = 'pct_eth_tag';
 let loiSortDir  = -1; // -1=desc, 1=asc
 let loiExpandedRow = null;
+let activeWindow   = 'all';
 
 // Pivot LOI keys — shown in Pivots tab, filtered out of LOI table
 const PIVOT_LOI_KEYS = [
@@ -291,19 +308,27 @@ function switchTab(tab) {
   renderTab(tab);
 }
 
+function switchWindow(w) {
+  activeWindow = w;
+  document.querySelectorAll('.win-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.win === w));
+  renderTab(currentTab);
+}
+
 function renderTab(tab) {
-  const d = allData[currentInst];
-  if (!d) return;
+  const raw = allData[currentInst];
+  if (!raw) return;
+  const win = raw.windows?.[activeWindow] ?? raw;
   const el = document.getElementById('tab-content');
   switch(tab) {
-    case 'ohlc':    el.innerHTML = renderOHLC(d.ohlc, d.history);    break;
-    case 'aln':     el.innerHTML = renderALN(d.aln);     break;
-    case 'or':      el.innerHTML = renderOR(d.or);       break;
-    case 'ib':      el.innerHTML = renderIB(d.ib);       break;
-    case 'gaps':    el.innerHTML = renderGaps(d.gaps);   break;
-    case 'loi':     el.innerHTML = renderLOI(d.loi);     attachLOIHandlers(); break;
-    case 'pivots':  el.innerHTML = renderPivots(d.pivots, d.loi); break;
-    case 'ladders': el.innerHTML = renderLadders(d.ladders); break;
+    case 'ohlc':    el.innerHTML = renderOHLC(win.ohlc, raw.history);    break;
+    case 'aln':     el.innerHTML = renderALN(win.aln);     break;
+    case 'or':      el.innerHTML = renderOR(win.or);       break;
+    case 'ib':      el.innerHTML = renderIB(win.ib);       break;
+    case 'gaps':    el.innerHTML = renderGaps(win.gaps);   break;
+    case 'loi':     el.innerHTML = renderLOI(win.loi);     attachLOIHandlers(); break;
+    case 'pivots':  el.innerHTML = renderPivots(win.pivots, win.loi); break;
+    case 'ladders': el.innerHTML = renderLadders(win.ladders); break;
     default:        el.innerHTML = '<div class="loading">Unknown tab</div>';
   }
 }
