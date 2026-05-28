@@ -1,112 +1,522 @@
 {
   "instrument": "MES",
   "generated": "2026-05-27",
-  "tabs": {
-    "ohlc": [
-      {
-        "text": "Last 30d avg range 82.1 pts \u2014 13.3 pts above historical avg (68.8 pts)",
-        "tone": "up"
-      },
-      {
-        "text": "63.2% up-days last 30d (bullish bias) \u2014 historical: 53.9%",
-        "tone": "up"
-      },
-      {
-        "text": "Highest avg range: Wednesday (87.2 pts) \u00b7 Lowest: Monday (75.1 pts)",
-        "tone": "neutral"
-      }
-    ],
-    "aln": [
-      {
-        "text": "Dominant pattern last 30d: PP3 at 50.0% (historical: 43.7%)",
-        "tone": "up"
-      },
-      {
-        "text": "London break bias last 30d: HIGH side leads (H: 75.0% \u00b7 L: 65.0%)",
-        "tone": "neutral"
-      },
-      {
-        "text": "When London H breaks first \u2192 22.2% of sessions also break L (both-sides rate)",
-        "tone": "down"
-      },
-      {
-        "text": "Asia both-sides cleanout last 30d: 35.0% (historical: 47.2%)",
-        "tone": "down"
-      }
-    ],
-    "or": [
-      {
-        "text": "OR break rate last 30d: 100.0% (historical: 99.9%)",
-        "tone": "neutral"
-      },
-      {
-        "text": "Avg OR range last 30d: 14.4 pts (historical: 17.4 pts)",
-        "tone": "down"
-      },
-      {
-        "text": "Peak OR break time: 09:30 (90.9% of breaks)",
-        "tone": "neutral"
-      },
-      {
-        "text": "TF1 (2-min) OR break: 90.9% \u00b7 TF3 (10-min) OR break: 90.9%",
-        "tone": "neutral"
-      }
-    ],
-    "ib": [
-      {
-        "text": "IB break rate last 30d: 100.0% (historical: 98.2%)",
-        "tone": "neutral"
-      },
-      {
-        "text": "Avg IB range last 30d: 31.4 pts (historical: 30.4 pts)",
-        "tone": "up"
-      },
-      {
-        "text": "IB break direction last 30d: UPSIDE bias (H: 68.2% \u00b7 L: 31.8%)",
-        "tone": "up"
-      },
-      {
-        "text": "Continuation: upper-half close \u2192 70.6% break up \u00b7 lower-half close \u2192 40.0% break down",
-        "tone": "neutral"
-      }
-    ],
-    "gaps": [
-      {
-        "text": "Full gap fill rate last 30d: 40.0% (historical: 50.9%)",
-        "tone": "down"
-      },
-      {
-        "text": "50%% fill rate last 30d: 65.0%",
-        "tone": "neutral"
-      },
-      {
-        "text": "Gap direction last 30d: UP gaps more frequent (Up: 55.0% \u00b7 Down: 40.0%)",
-        "tone": "neutral"
-      }
-    ],
-    "loi": [
-      {
-        "text": "Most-tagged LOI levels (ETH) last 30d: ovn_h (100.0%), ovn_l (100.0%), asia_h (100.0%)",
-        "tone": "neutral"
-      },
-      {
-        "text": "ovn_h close-above rate last 30d: 40.0% (historical: 34.6%)",
-        "tone": "up"
-      }
-    ],
-    "pivots": [
-      {
-        "text": "Most common close last 30d: above D R1 (26.3% of sessions)",
-        "tone": "neutral"
-      },
-      {
-        "text": "Most-touched daily level last 30d: D R1 (57.9%)",
-        "tone": "neutral"
-      },
-      {
-        "text": "Weekly pivot close location: mostly above W Pivot last 30d (63.2%)",
-        "tone": "neutral"
-      }
-    ]
+  "windows": {
+    "all": {
+      "ohlc": [
+        {
+          "text": "Historical avg daily range: 68.8 pts",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical up-day rate: 53.9% (bullish)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Highest avg range day: Thursday (71.9 pts) \u00b7 Lowest: Tuesday (65.8 pts)",
+          "tone": "neutral"
+        }
+      ],
+      "aln": [
+        {
+          "text": "Most common pattern historically: PP3 at 43.7%",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical London break bias: HIGH leads (H: 74.9% \u00b7 L: 65.4%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical Asia both-sides cleanout: 47.2%",
+          "tone": "neutral"
+        }
+      ],
+      "or": [
+        {
+          "text": "Historical OR break rate: 99.9%",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical avg OR range: 17.4 pts",
+          "tone": "neutral"
+        },
+        {
+          "text": "Most common OR break time historically: 09:45 (54.2%)",
+          "tone": "neutral"
+        }
+      ],
+      "ib": [
+        {
+          "text": "Historical IB break rate: 98.2%",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical avg IB range: 30.4 pts",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical IB break bias: UPSIDE (H: 51.5% \u00b7 L: 46.7%)",
+          "tone": "neutral"
+        }
+      ],
+      "gaps": [
+        {
+          "text": "Historical full gap fill rate: 50.9%",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical 50% fill rate: 67.4%",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical gap direction: UP gaps more frequent (Up: 51.3% \u00b7 Down: 38.7%)",
+          "tone": "neutral"
+        }
+      ],
+      "loi": [
+        {
+          "text": "Historically most-tagged LOI levels (ETH): ovn_h (100.0%), ovn_l (100.0%), asia_h (100.0%)",
+          "tone": "neutral"
+        }
+      ],
+      "pivots": [
+        {
+          "text": "Historical most common close location: above D Pivot (31.1% of sessions)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historically most-touched daily level: D R1 (47.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Historical weekly pivot close: mostly above W Pivot (43.7%)",
+          "tone": "neutral"
+        }
+      ]
+    },
+    "6m": {
+      "ohlc": [
+        {
+          "text": "Avg range 91.5 pts \u2014 22.7 pts above historical avg (68.8 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "52.9% up-days (no directional bias) \u2014 historical: 53.9%",
+          "tone": "neutral"
+        },
+        {
+          "text": "Highest avg range: Monday (102.1 pts) \u00b7 Lowest: Wednesday (87.1 pts)",
+          "tone": "neutral"
+        }
+      ],
+      "aln": [
+        {
+          "text": "Dominant pattern: PP3 at 43.1% (historical: 43.7%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "London break bias: HIGH side leads (H: 74.8% \u00b7 L: 64.2%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "When London H breaks first \u2192 33.9% of sessions also break L",
+          "tone": "down"
+        },
+        {
+          "text": "Asia both-sides cleanout: 43.9% (historical: 47.2%)",
+          "tone": "down"
+        }
+      ],
+      "or": [
+        {
+          "text": "OR break rate: 100.0% (historical: 99.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg OR range: 18.0 pts (historical: 17.4 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "Peak OR break time: 09:30 (74.8% of breaks)",
+          "tone": "neutral"
+        },
+        {
+          "text": "TF1 (2-min) OR break: 98.4% \u00b7 TF3 (10-min) OR break: 98.4%",
+          "tone": "neutral"
+        }
+      ],
+      "ib": [
+        {
+          "text": "IB break rate: 97.6% (historical: 98.2%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg IB range: 38.8 pts (historical: 30.4 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "IB break direction: UPSIDE bias (H: 54.5% \u00b7 L: 43.1%)",
+          "tone": "up"
+        },
+        {
+          "text": "Continuation: upper-half close \u2192 75.3% break up \u00b7 lower-half \u2192 71.4% break down",
+          "tone": "neutral"
+        }
+      ],
+      "gaps": [
+        {
+          "text": "Full gap fill rate: 50.4% (historical: 50.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "50% fill rate: 69.1% (historical: 67.4%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Gap direction: UP gaps more frequent (Up: 48.8% \u00b7 Down: 45.5%)",
+          "tone": "neutral"
+        }
+      ],
+      "loi": [
+        {
+          "text": "Most-tagged LOI levels (ETH): ovn_h (100.0%), ovn_l (100.0%), asia_h (100.0%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "ovn_h close-above rate: 34.1% (historical: 34.6%)",
+          "tone": "neutral"
+        }
+      ],
+      "pivots": [
+        {
+          "text": "Most common close location: above D Pivot (33.1% of sessions)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Most-touched daily level: D S1 (46.3%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Weekly pivot close: mostly above W Pivot (44.6%)",
+          "tone": "neutral"
+        }
+      ]
+    },
+    "3m": {
+      "ohlc": [
+        {
+          "text": "Avg range 103.9 pts \u2014 35.1 pts above historical avg (68.8 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "57.4% up-days (bullish bias) \u2014 historical: 53.9%",
+          "tone": "up"
+        },
+        {
+          "text": "Highest avg range: Monday (124.2 pts) \u00b7 Lowest: Thursday (94.8 pts)",
+          "tone": "neutral"
+        }
+      ],
+      "aln": [
+        {
+          "text": "Dominant pattern: PP3 at 46.8% (historical: 43.7%)",
+          "tone": "up"
+        },
+        {
+          "text": "London break bias: HIGH side leads (H: 72.6% \u00b7 L: 61.3%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "When London H breaks first \u2192 23.4% of sessions also break L",
+          "tone": "down"
+        },
+        {
+          "text": "Asia both-sides cleanout: 35.5% (historical: 47.2%)",
+          "tone": "down"
+        }
+      ],
+      "or": [
+        {
+          "text": "OR break rate: 100.0% (historical: 99.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg OR range: 17.9 pts (historical: 17.4 pts)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Peak OR break time: 09:30 (88.9% of breaks)",
+          "tone": "neutral"
+        },
+        {
+          "text": "TF1 (2-min) OR break: 96.8% \u00b7 TF3 (10-min) OR break: 96.8%",
+          "tone": "neutral"
+        }
+      ],
+      "ib": [
+        {
+          "text": "IB break rate: 98.4% (historical: 98.2%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg IB range: 38.8 pts (historical: 30.4 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "IB break direction: UPSIDE bias (H: 57.1% \u00b7 L: 41.3%)",
+          "tone": "up"
+        },
+        {
+          "text": "Continuation: upper-half close \u2192 70.0% break up \u00b7 lower-half \u2192 65.2% break down",
+          "tone": "neutral"
+        }
+      ],
+      "gaps": [
+        {
+          "text": "Full gap fill rate: 42.6% (historical: 50.9%)",
+          "tone": "down"
+        },
+        {
+          "text": "50% fill rate: 65.6% (historical: 67.4%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Gap direction: DOWN gaps more frequent (Up: 47.5% \u00b7 Down: 49.2%)",
+          "tone": "neutral"
+        }
+      ],
+      "loi": [
+        {
+          "text": "Most-tagged LOI levels (ETH): ovn_h (100.0%), ovn_l (100.0%), asia_h (100.0%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "ovn_h close-above rate: 32.8% (historical: 34.6%)",
+          "tone": "down"
+        }
+      ],
+      "pivots": [
+        {
+          "text": "Most common close location: above D Pivot (34.4% of sessions)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Most-touched daily level: D S1 (47.5%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Weekly pivot close: mostly above W Pivot (41.0%)",
+          "tone": "neutral"
+        }
+      ]
+    },
+    "1m": {
+      "ohlc": [
+        {
+          "text": "Avg range 82.1 pts \u2014 13.3 pts above historical avg (68.8 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "63.2% up-days (bullish bias) \u2014 historical: 53.9%",
+          "tone": "up"
+        },
+        {
+          "text": "Highest avg range: Wednesday (87.2 pts) \u00b7 Lowest: Monday (75.1 pts)",
+          "tone": "neutral"
+        }
+      ],
+      "aln": [
+        {
+          "text": "Dominant pattern: PP3 at 50.0% (historical: 43.7%)",
+          "tone": "up"
+        },
+        {
+          "text": "London break bias: HIGH side leads (H: 75.0% \u00b7 L: 65.0%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "When London H breaks first \u2192 22.2% of sessions also break L",
+          "tone": "down"
+        },
+        {
+          "text": "Asia both-sides cleanout: 35.0% (historical: 47.2%)",
+          "tone": "down"
+        }
+      ],
+      "or": [
+        {
+          "text": "OR break rate: 100.0% (historical: 99.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg OR range: 14.4 pts (historical: 17.4 pts)",
+          "tone": "down"
+        },
+        {
+          "text": "Peak OR break time: 09:30 (90.9% of breaks)",
+          "tone": "neutral"
+        },
+        {
+          "text": "TF1 (2-min) OR break: 90.9% \u00b7 TF3 (10-min) OR break: 90.9%",
+          "tone": "neutral"
+        }
+      ],
+      "ib": [
+        {
+          "text": "IB break rate: 100.0% (historical: 98.2%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg IB range: 31.4 pts (historical: 30.4 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "IB break direction: UPSIDE bias (H: 68.2% \u00b7 L: 31.8%)",
+          "tone": "up"
+        },
+        {
+          "text": "Continuation: upper-half close \u2192 70.6% break up \u00b7 lower-half \u2192 40.0% break down",
+          "tone": "neutral"
+        }
+      ],
+      "gaps": [
+        {
+          "text": "Full gap fill rate: 40.0% (historical: 50.9%)",
+          "tone": "down"
+        },
+        {
+          "text": "50% fill rate: 65.0% (historical: 67.4%)",
+          "tone": "down"
+        },
+        {
+          "text": "Gap direction: UP gaps more frequent (Up: 55.0% \u00b7 Down: 40.0%)",
+          "tone": "neutral"
+        }
+      ],
+      "loi": [
+        {
+          "text": "Most-tagged LOI levels (ETH): ovn_h (100.0%), ovn_l (100.0%), asia_h (100.0%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "ovn_h close-above rate: 40.0% (historical: 34.6%)",
+          "tone": "up"
+        }
+      ],
+      "pivots": [
+        {
+          "text": "Most common close location: above D R1 (26.3% of sessions)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Most-touched daily level: D R1 (57.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Weekly pivot close: mostly above W Pivot (63.2%)",
+          "tone": "neutral"
+        }
+      ]
+    },
+    "1w": {
+      "ohlc": [
+        {
+          "text": "Avg range 68.4 pts \u2014 0.4 pts below historical avg (68.8 pts)",
+          "tone": "neutral"
+        },
+        {
+          "text": "100.0% up-days (bullish bias) \u2014 historical: 53.9%",
+          "tone": "up"
+        },
+        {
+          "text": "Highest avg range: Thursday (79.2 pts) \u00b7 Lowest: Friday (57.5 pts)",
+          "tone": "neutral"
+        }
+      ],
+      "aln": [
+        {
+          "text": "Dominant pattern: PP3 at 66.7% (historical: 43.7%)",
+          "tone": "up"
+        },
+        {
+          "text": "London break bias: HIGH side leads (H: 100.0% \u00b7 L: 33.3%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Asia both-sides cleanout: 33.3% (historical: 47.2%)",
+          "tone": "down"
+        }
+      ],
+      "or": [
+        {
+          "text": "OR break rate: 100.0% (historical: 99.9%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg OR range: 7.8 pts (historical: 17.4 pts)",
+          "tone": "down"
+        },
+        {
+          "text": "Peak OR break time: 09:30 (100.0% of breaks)",
+          "tone": "neutral"
+        },
+        {
+          "text": "TF1 (2-min) OR break: 60.0% \u00b7 TF3 (10-min) OR break: 60.0%",
+          "tone": "neutral"
+        }
+      ],
+      "ib": [
+        {
+          "text": "IB break rate: 100.0% (historical: 98.2%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Avg IB range: 33.6 pts (historical: 30.4 pts)",
+          "tone": "up"
+        },
+        {
+          "text": "IB break direction: UPSIDE bias (H: 60.0% \u00b7 L: 40.0%)",
+          "tone": "up"
+        }
+      ],
+      "gaps": [
+        {
+          "text": "Full gap fill rate: 33.3% (historical: 50.9%)",
+          "tone": "down"
+        },
+        {
+          "text": "50% fill rate: 100.0% (historical: 67.4%)",
+          "tone": "up"
+        },
+        {
+          "text": "Gap direction: UP gaps more frequent (Up: 66.7% \u00b7 Down: 33.3%)",
+          "tone": "neutral"
+        }
+      ],
+      "loi": [
+        {
+          "text": "Most-tagged LOI levels (ETH): ny_pd_high (100.0%), ovn_h (100.0%), ovn_l (100.0%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "ny_pd_high close-above rate: 66.7% (historical: 36.8%)",
+          "tone": "up"
+        }
+      ],
+      "pivots": [
+        {
+          "text": "Most common close location: above D Pivot (100.0% of sessions)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Most-touched daily level: D R1 (50.0%)",
+          "tone": "neutral"
+        },
+        {
+          "text": "Weekly pivot close: mostly above W Pivot (100.0%)",
+          "tone": "neutral"
+        }
+      ]
+    }
   }
 }

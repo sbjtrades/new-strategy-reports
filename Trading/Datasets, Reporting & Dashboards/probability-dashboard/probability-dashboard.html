@@ -342,12 +342,12 @@ function metaLine(nDays) {
 function renderInsightsCard(tabKey) {
   const data = allTakeaways[currentInst];
   if (!data) return '';
-  const items = data.tabs?.[tabKey];
+  const items = data.windows?.[activeWindow]?.[tabKey];
   if (!items || items.length === 0) return '';
   const rows = items.map(it =>
     `<li class="tone-${it.tone || 'neutral'}">${it.text}</li>`
   ).join('');
-  return `<div class="insights-card"><div class="card-label">KEY INSIGHTS — LAST 30 DAYS VS HISTORICAL</div><ul class="insights-list">${rows}</ul></div>`;
+  return `<div class="insights-card"><div class="card-label">KEY INSIGHTS — ${activeWindow === 'all' ? 'ALL TIME BENCHMARKS' : (activeWindow === '6m' ? 'LAST 6 MONTHS VS ALL' : activeWindow === '3m' ? 'LAST 3 MONTHS VS ALL' : activeWindow === '1m' ? 'LAST 30 DAYS VS ALL' : 'LAST 7 DAYS VS ALL')}</div><ul class="insights-list">${rows}</ul></div>`;
 }
 
 function renderTab(tab) {
