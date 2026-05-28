@@ -783,19 +783,19 @@ function renderOR(d) {
 
   <div class="card-row card-row-4">
     <div class="card">
-      <div class="card-label">OR RANGE</div>
+      <div class="card-label">OR RANGE <span style="color:var(--muted);font-weight:400">(30-min chart)</span></div>
       ${statBlock(d.or_range,' pts')}
     </div>
     <div class="card">
-      <div class="card-label">OR TF1 RANGE</div>
+      <div class="card-label">TF1 OR RANGE <span style="color:var(--muted);font-weight:400">(2-min)</span></div>
       ${statBlock(d.or_tf1_range,' pts')}
     </div>
     <div class="card">
-      <div class="card-label">OR TF2 RANGE</div>
+      <div class="card-label">TF2 OR RANGE <span style="color:var(--muted);font-weight:400">(5-min)</span></div>
       ${statBlock(d.or_tf2_range,' pts')}
     </div>
     <div class="card">
-      <div class="card-label">OR TF3 RANGE</div>
+      <div class="card-label">TF3 OR RANGE <span style="color:var(--muted);font-weight:400">(10-min)</span></div>
       ${statBlock(d.or_tf3_range,' pts')}
     </div>
   </div>
@@ -816,12 +816,12 @@ function renderOR(d) {
   </div>
 
   <div class="card-row card-row-3">
-    ${['tf1','tf2','tf3'].map((tf,i) => {
+    ${[['tf1','2-min'],['tf2','5-min'],['tf3','10-min']].map(([tf,label],i) => {
       const breakRate = d[`pct_or_${tf}_break`];
       const dist = d[`or_${tf}_break_time_dist`];
       return `<div class="card">
-        <div class="card-label">TF${i+1} BREAK</div>
-        ${fillBar(`TF${i+1} Broke`, breakRate, null, cnt(breakRate, d.n_days))}
+        <div class="card-label">TF${i+1} BREAK <span style="color:var(--muted);font-weight:400">(${label})</span></div>
+        ${fillBar(`TF${i+1} (${label}) Broke`, breakRate, null, cnt(breakRate, d.n_days))}
         <div style="margin-top:10px">
           ${timeDist(dist)}
         </div>
