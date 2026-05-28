@@ -257,6 +257,7 @@ let loiSortCol  = 'pct_eth_tag';
 let loiSortDir  = -1; // -1=desc, 1=asc
 let loiExpandedRow = null;
 let activeWindow   = 'all';
+let winMeta        = null;
 
 // Pivot LOI keys — shown in Pivots tab, filtered out of LOI table
 const PIVOT_LOI_KEYS = [
@@ -315,10 +316,17 @@ function switchWindow(w) {
   renderTab(currentTab);
 }
 
+function metaLine(nDays) {
+  const s = `${comma(nDays)} sessions`;
+  if (!winMeta) return s;
+  return `${s} <span style="color:var(--border);margin:0 3px">·</span> <span style="opacity:.6">${winMeta.from} – ${winMeta.to}</span>`;
+}
+
 function renderTab(tab) {
   const raw = allData[currentInst];
   if (!raw) return;
   const win = raw.windows?.[activeWindow] ?? raw;
+  winMeta = win._meta || null;
   const el = document.getElementById('tab-content');
   switch(tab) {
     case 'ohlc':    el.innerHTML = renderOHLC(win.ohlc, raw.history);    break;
@@ -548,7 +556,7 @@ function renderOHLC(d, hist) {
   </div>` : '';
 
   return `
-  <div class="tab-header"><h2>Daily OHLC</h2><span class="meta">${comma(d.n_days)} sessions</span></div>
+  <div class="tab-header"><h2>Daily OHLC</h2><span class="meta">${metaLine(d.n_days)}</span></div>
 
   <div class="card-row card-row-4">
     <div class="card">
@@ -608,7 +616,7 @@ function renderALN(d) {
   };
 
   return `
-  <div class="tab-header"><h2>ALN Sessions</h2><span class="meta">${d.n_days} sessions</span></div>
+  <div class="tab-header"><h2>ALN Sessions</h2><span class="meta">${metaLine(d.n_days)}</span></div>
 
   <div class="card-row card-row-4">
     ${['P1','P2','P3','P4'].map(p => {
@@ -771,7 +779,7 @@ function renderALN(d) {
 function renderOR(d) {
   if (!d) return '<div class="loading">No OR data</div>';
   return `
-  <div class="tab-header"><h2>Opening Range</h2><span class="meta">${comma(d.n_days)} sessions</span></div>
+  <div class="tab-header"><h2>Opening Range</h2><span class="meta">${metaLine(d.n_days)}</span></div>
 
   <div class="card-row card-row-4">
     <div class="card">
@@ -849,7 +857,7 @@ function renderIB(d) {
   }
 
   return `
-  <div class="tab-header"><h2>Initial Balance</h2><span class="meta">${comma(d.n_days)} sessions</span></div>
+  <div class="tab-header"><h2>Initial Balance</h2><span class="meta">${metaLine(d.n_days)}</span></div>
 
   <div class="card-row card-row-3">
     <div class="card">
@@ -906,7 +914,7 @@ function renderGaps(d) {
   const bySize = d.fill_by_size || {};
 
   return `
-  <div class="tab-header"><h2>RTH Gap Analysis</h2><span class="meta">${comma(d.n_days)} sessions</span></div>
+  <div class="tab-header"><h2>RTH Gap Analysis</h2><span class="meta">${metaLine(d.n_days)}</span></div>
 
   <div class="card-row card-row-3">
     <div class="card">
@@ -986,7 +994,7 @@ function renderLOI(d) {
   return `
   <div class="tab-header">
     <h2>Levels of Interest</h2>
-    <span class="meta">${d.n_days} sessions · Click header to sort · Click row for tag time distributions</span>
+    <span class="meta">${metaLine(d.n_days)} · Click header to sort · Click row for tag time distributions</span>
   </div>
 
   <div class="card">
@@ -1098,7 +1106,7 @@ function renderPivots(d, loiData) {
   }
 
   return `
-  <div class="tab-header"><h2>Daily / Weekly / Monthly Pivots</h2><span class="meta">${comma(d.n_days)} sessions</span></div>
+  <div class="tab-header"><h2>Daily / Weekly / Monthly Pivots</h2><span class="meta">${metaLine(d.n_days)}</span></div>
 
   <div class="section-title">CLOSE LOCATION vs PIVOT LEVELS</div>
   <div class="card-row card-row-3">

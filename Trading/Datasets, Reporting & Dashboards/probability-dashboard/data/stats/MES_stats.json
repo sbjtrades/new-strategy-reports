@@ -2,6 +2,10 @@
   "instrument": "MES",
   "windows": {
     "all": {
+      "_meta": {
+        "from": "May 02, 2019",
+        "to": "May 22, 2026"
+      },
       "ohlc": {
         "n_days": 1777,
         "daily_range": {
@@ -10112,6 +10116,10 @@
       }
     },
     "6m": {
+      "_meta": {
+        "from": "Nov 28, 2025",
+        "to": "May 22, 2026"
+      },
       "ohlc": {
         "n_days": 121,
         "daily_range": {
@@ -18305,6 +18313,10 @@
       }
     },
     "3m": {
+      "_meta": {
+        "from": "Feb 26, 2026",
+        "to": "May 22, 2026"
+      },
       "ohlc": {
         "n_days": 61,
         "daily_range": {
@@ -24872,6 +24884,10 @@
       }
     },
     "1m": {
+      "_meta": {
+        "from": "Apr 27, 2026",
+        "to": "May 22, 2026"
+      },
       "ohlc": {
         "n_days": 19,
         "daily_range": {
@@ -29001,6 +29017,10 @@
       }
     },
     "1w": {
+      "_meta": {
+        "from": "May 20, 2026",
+        "to": "May 22, 2026"
+      },
       "ohlc": {
         "n_days": 2,
         "daily_range": {
