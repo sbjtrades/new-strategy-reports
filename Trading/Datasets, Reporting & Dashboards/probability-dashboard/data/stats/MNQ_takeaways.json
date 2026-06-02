@@ -51,11 +51,11 @@
           "tone": "neutral"
         },
         {
-          "text": "Historical avg IB range: 158.4 pts",
+          "text": "Historical avg IB range: 158.3 pts",
           "tone": "neutral"
         },
         {
-          "text": "Historical IB break bias: UPSIDE (H: 50.3% \u00b7 L: 46.2%)",
+          "text": "Historical IB break bias: UPSIDE (H: 50.1% \u00b7 L: 45.9%)",
           "tone": "neutral"
         }
       ],
@@ -133,15 +133,15 @@
           "tone": "neutral"
         },
         {
-          "text": "Avg OR range: 110.7 pts (historical: 94.5 pts)",
+          "text": "Avg OR range: 111.2 pts (historical: 94.5 pts)",
           "tone": "up"
         },
         {
-          "text": "Peak OR break time: 00:00 (58.0% of breaks)",
+          "text": "Peak OR break time: 00:00 (55.0% of breaks)",
           "tone": "neutral"
         },
         {
-          "text": "TF1 (2-min) OR break: 78.7% \u00b7 TF3 (10-min) OR break: 78.7%",
+          "text": "TF1 (2-min) OR break: 79.2% \u00b7 TF3 (10-min) OR break: 79.2%",
           "tone": "neutral"
         }
       ],
@@ -151,15 +151,15 @@
           "tone": "neutral"
         },
         {
-          "text": "Avg IB range: 220.6 pts (historical: 158.4 pts)",
+          "text": "Avg IB range: 220.8 pts (historical: 158.3 pts)",
           "tone": "up"
         },
         {
-          "text": "IB break direction: UPSIDE bias (H: 49.3% \u00b7 L: 44.0%)",
+          "text": "IB break direction: UPSIDE bias (H: 47.7% \u00b7 L: 42.3%)",
           "tone": "up"
         },
         {
-          "text": "Continuation: upper-half close \u2192 69.3% break up \u00b7 lower-half \u2192 64.0% break down",
+          "text": "Continuation: upper-half close \u2192 66.7% break up \u00b7 lower-half \u2192 60.0% break down",
           "tone": "neutral"
         }
       ],
@@ -245,15 +245,15 @@
           "tone": "neutral"
         },
         {
-          "text": "Avg OR range: 102.5 pts (historical: 94.5 pts)",
+          "text": "Avg OR range: 103.4 pts (historical: 94.5 pts)",
           "tone": "up"
         },
         {
-          "text": "Peak OR break time: 00:00 (66.7% of breaks)",
+          "text": "Peak OR break time: 00:00 (61.0% of breaks)",
           "tone": "neutral"
         },
         {
-          "text": "TF1 (2-min) OR break: 74.4% \u00b7 TF3 (10-min) OR break: 74.4%",
+          "text": "TF1 (2-min) OR break: 75.3% \u00b7 TF3 (10-min) OR break: 75.3%",
           "tone": "neutral"
         }
       ],
@@ -263,15 +263,15 @@
           "tone": "neutral"
         },
         {
-          "text": "Avg IB range: 211.0 pts (historical: 158.4 pts)",
+          "text": "Avg IB range: 211.3 pts (historical: 158.3 pts)",
           "tone": "up"
         },
         {
-          "text": "IB break direction: UPSIDE bias (H: 53.8% \u00b7 L: 42.3%)",
+          "text": "IB break direction: UPSIDE bias (H: 50.6% \u00b7 L: 39.0%)",
           "tone": "up"
         },
         {
-          "text": "Continuation: upper-half close \u2192 63.4% break up \u00b7 lower-half \u2192 52.2% break down",
+          "text": "Continuation: upper-half close \u2192 58.5% break up \u00b7 lower-half \u2192 43.5% break down",
           "tone": "neutral"
         }
       ],
@@ -357,15 +357,15 @@
           "tone": "neutral"
         },
         {
-          "text": "Avg OR range: 94.1 pts (historical: 94.5 pts)",
+          "text": "Avg OR range: 96.2 pts (historical: 94.5 pts)",
           "tone": "neutral"
         },
         {
-          "text": "Peak OR break time: 00:00 (53.8% of breaks)",
+          "text": "Peak OR break time: 00:00 (36.0% of breaks)",
           "tone": "neutral"
         },
         {
-          "text": "TF1 (2-min) OR break: 57.7% \u00b7 TF3 (10-min) OR break: 57.7%",
+          "text": "TF1 (2-min) OR break: 60.0% \u00b7 TF3 (10-min) OR break: 60.0%",
           "tone": "neutral"
         }
       ],
@@ -375,16 +375,12 @@
           "tone": "up"
         },
         {
-          "text": "Avg IB range: 227.6 pts (historical: 158.4 pts)",
+          "text": "Avg IB range: 229.2 pts (historical: 158.3 pts)",
           "tone": "up"
         },
         {
-          "text": "IB break direction: UPSIDE bias (H: 69.2% \u00b7 L: 26.9%)",
+          "text": "IB break direction: UPSIDE bias (H: 60.0% \u00b7 L: 16.0%)",
           "tone": "up"
-        },
-        {
-          "text": "Continuation: upper-half close \u2192 66.7% break up \u00b7 lower-half \u2192 33.3% break down",
-          "tone": "neutral"
         }
       ],
       "gaps": [
@@ -465,11 +461,11 @@
           "tone": "neutral"
         },
         {
-          "text": "Avg OR range: 37.9 pts (historical: 94.5 pts)",
+          "text": "Avg OR range: 37.6 pts (historical: 94.5 pts)",
           "tone": "down"
         },
         {
-          "text": "Peak OR break time: 00:00 (71.4% of breaks)",
+          "text": "Peak OR break time: 09:30 (100.0% of breaks)",
           "tone": "neutral"
         }
       ],
@@ -479,16 +475,8 @@
           "tone": "up"
         },
         {
-          "text": "Avg IB range: 207.3 pts (historical: 158.4 pts)",
+          "text": "Avg IB range: 210.2 pts (historical: 158.3 pts)",
           "tone": "up"
-        },
-        {
-          "text": "IB break direction: DOWNSIDE bias (H: 42.9% \u00b7 L: 42.9%)",
-          "tone": "down"
-        },
-        {
-          "text": "Continuation: upper-half close \u2192 50.0% break up \u00b7 lower-half \u2192 100.0% break down",
-          "tone": "neutral"
         }
       ],
       "gaps": [
