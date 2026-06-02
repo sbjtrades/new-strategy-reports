@@ -89,9 +89,9 @@ main{max-width:none;padding:20px}
   .pivot-cell-val{font-size:1.3rem}
   .pivot-cell-label{font-size:.72rem}
   .pivot-cell{padding:13px}
-  table.dt{font-size:.86rem}
-  table.dt th{font-size:.74rem;padding:9px 14px}
-  table.dt td{padding:8px 14px}
+  table.dt{font-size:1rem}
+  table.dt th{font-size:.82rem;padding:10px 16px}
+  table.dt td{padding:9px 16px;font-size:.98rem}
   .big-num{font-size:2.4rem}
   .big-stat{font-size:1.6rem}
   .n-note{font-size:.72rem}
@@ -525,8 +525,7 @@ function fmtChg(v) {
     const n = parseFloat(v);
     const col = n >= 0 ? 'var(--green)' : 'var(--red)';
     const sign = n >= 0 ? '+' : '';
-    const fmt = Number(n.toFixed(3)).toString();
-    return `<span style="color:${col};font-weight:600">${sign}${fmt}%</span>`;
+    return `<span style="color:${col};font-weight:600">${sign}${n.toFixed(2)}%</span>`;
   } catch { return v; }
 }
 
