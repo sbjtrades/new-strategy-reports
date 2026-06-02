@@ -286,14 +286,14 @@ const PIVOT_LOI_KEYS = [
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init() {
   try {
-    const v = Date.now();
+    const v = '20260601-1';
     const [mnq, mes, nqHist, esHist, mnqTw, mesTw] = await Promise.all([
-      fetch(`./data/stats/MNQ_stats.json?v=${v}`).then(r => r.json()),
-      fetch(`./data/stats/MES_stats.json?v=${v}`).then(r => r.json()),
-      fetch(`./data/stats/NQ_history.json?v=${v}`).then(r => r.json()).catch(() => null),
-      fetch(`./data/stats/ES_history.json?v=${v}`).then(r => r.json()).catch(() => null),
-      fetch(`./data/stats/MNQ_takeaways.json?v=${v}`).then(r => r.json()).catch(() => null),
-      fetch(`./data/stats/MES_takeaways.json?v=${v}`).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/MNQ_stats.json?v=${v}`, {cache:'no-store'}).then(r => r.json()),
+      fetch(`./data/stats/MES_stats.json?v=${v}`, {cache:'no-store'}).then(r => r.json()),
+      fetch(`./data/stats/NQ_history.json?v=${v}`, {cache:'no-store'}).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/ES_history.json?v=${v}`, {cache:'no-store'}).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/MNQ_takeaways.json?v=${v}`, {cache:'no-store'}).then(r => r.json()).catch(() => null),
+      fetch(`./data/stats/MES_takeaways.json?v=${v}`, {cache:'no-store'}).then(r => r.json()).catch(() => null),
     ]);
     allData['MNQ'] = mnq;
     allData['MES'] = mes;
