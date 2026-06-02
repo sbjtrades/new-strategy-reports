@@ -536,10 +536,6 @@ function renderOHLC(d, hist) {
 
   const DAILY_COLS = [
     {key:'date',      label:'Date',     align:'left'},
-    {key:'open',      label:'Open',     format: fmtNum},
-    {key:'high',      label:'High',     format: (v,r) => `<span style="color:var(--green)">${fmtNum(v)}</span>`},
-    {key:'low',       label:'Low',      format: (v,r) => `<span style="color:var(--red)">${fmtNum(v)}</span>`},
-    {key:'close',     label:'Close',    format: fmtNum},
     {key:'range',     label:'Range',    format: v => fmtNum(v) + ' pts'},
     {key:'volume',    label:'Volume',   format: fmtVol},
     {key:'direction', label:'Dir',      format: dirBadge},
@@ -547,21 +543,15 @@ function renderOHLC(d, hist) {
   ];
   const WEEKLY_COLS = [
     {key:'date',      label:'Week',     align:'left'},
-    {key:'open',      label:'Open',     format: fmtNum},
-    {key:'high',      label:'High',     format: (v) => `<span style="color:var(--green)">${fmtNum(v)}</span>`},
-    {key:'low',       label:'Low',      format: (v) => `<span style="color:var(--red)">${fmtNum(v)}</span>`},
-    {key:'close',     label:'Close',    format: fmtNum},
     {key:'range',     label:'Range',    format: v => fmtNum(v) + ' pts'},
+    {key:'volume',    label:'Volume',   format: fmtVol},
     {key:'direction', label:'Dir',      format: dirBadge},
     {key:'change_pct',label:'Chg %',    format: fmtChg},
   ];
   const MONTHLY_COLS = [
     {key:'date',      label:'Month',    align:'left'},
-    {key:'open',      label:'Open',     format: fmtNum},
-    {key:'high',      label:'High',     format: (v) => `<span style="color:var(--green)">${fmtNum(v)}</span>`},
-    {key:'low',       label:'Low',      format: (v) => `<span style="color:var(--red)">${fmtNum(v)}</span>`},
-    {key:'close',     label:'Close',    format: fmtNum},
     {key:'range',     label:'Range',    format: v => fmtNum(v) + ' pts'},
+    {key:'volume',    label:'Volume',   format: fmtVol},
     {key:'direction', label:'Dir',      format: dirBadge},
     {key:'change_pct',label:'Chg %',    format: fmtChg},
   ];
