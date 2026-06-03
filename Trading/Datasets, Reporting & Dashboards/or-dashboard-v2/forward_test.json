@@ -1,0 +1,11 @@
+{
+  "filter": "30-min ≥60% confluence",
+  "description": "Live forward test of the 30-min HTF confluence filter (≥60% body/range ratio). Signals taken only when the in-progress 30-min candle shows ≥60% alignment with trade direction.",
+  "start_date": "2026-06-03",
+  "instrument": "MNQ",
+  "baseline_wr": 27.0,
+  "baseline_pnl_per_signal": 2.55,
+  "research_wr": 66.7,
+  "research_n": 12,
+  "weeks": []
+}

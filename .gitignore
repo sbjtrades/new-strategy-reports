@@ -25,6 +25,12 @@ Trading/probability-dashboard/**
 Trading/or-dashboard-v2/**
 !Trading/or-dashboard-v2/unified-dashboard.html
 !Trading/or-dashboard-v2/dashboard_data.json
+!Trading/or-dashboard-v2/index.html
+!Trading/or-dashboard-v2/performance.html
+!Trading/or-dashboard-v2/htf-research.html
+!Trading/or-dashboard-v2/htf_research.json
+!Trading/or-dashboard-v2/forward_test.json
+!Trading/or-dashboard-v2/update.py
 
 Trading/Datasets*/probability-dashboard/**
 !Trading/Datasets*/probability-dashboard/probability-dashboard.html
@@ -41,3 +47,9 @@ Trading/Datasets*/probability-dashboard/data/*google-cloud-api*.json
 Trading/Datasets*/or-dashboard-v2/**
 !Trading/Datasets*/or-dashboard-v2/unified-dashboard.html
 !Trading/Datasets*/or-dashboard-v2/dashboard_data.json
+!Trading/Datasets*/or-dashboard-v2/index.html
+!Trading/Datasets*/or-dashboard-v2/performance.html
+!Trading/Datasets*/or-dashboard-v2/htf-research.html
+!Trading/Datasets*/or-dashboard-v2/htf_research.json
+!Trading/Datasets*/or-dashboard-v2/forward_test.json
+!Trading/Datasets*/or-dashboard-v2/update.py

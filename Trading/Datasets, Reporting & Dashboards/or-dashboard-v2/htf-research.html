@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTF Confluence Filter Research — 30-Sec OR Strategy</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#0f172a}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;padding:28px;max-width:1400px;margin:0 auto}
+h1{font-size:1.4rem;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.sub{color:#64748b;font-size:.85rem;margin-bottom:28px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px}
+.ct{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:10px}
+.big{font-size:2.2rem;font-weight:800;line-height:1}
+.msub{font-size:.78rem;color:#94a3b8;margin-top:4px}
+.green{color:#10b981}.blue{color:#3b82f6}.amber{color:#f59e0b}.red{color:#ef4444}.gray{color:#94a3b8}
+.badge{display:inline-block;font-size:.65rem;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.badge-amber{background:#451a03;color:#fcd34d}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.73rem;font-weight:700}
+.pill-blue{background:#1e3a5f;color:#93c5fd}.pill-green{background:#064e3b;color:#6ee7b7}.pill-amber{background:#451a03;color:#fcd34d}
+h2{font-size:.95rem;font-weight:600;color:#cbd5e1;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155}
+.chart-box{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
+canvas{max-height:260px}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{text-align:left;padding:9px 12px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;border-bottom:1px solid #334155;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #1e293b;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#ffffff06}
+.wr-bg{background:#334155;border-radius:3px;height:5px;width:80px;margin-top:3px}
+.wr-fill{height:5px;border-radius:3px}
+.kf{background:#1e3a5f;border:1px solid #3b82f6;border-radius:10px;padding:16px 20px;margin-bottom:24px}
+.kf-t{font-size:.7rem;font-weight:800;text-transform:uppercase;color:#60a5fa;margin-bottom:8px;letter-spacing:.06em}
+.kf p{font-size:.88rem;color:#cbd5e1;line-height:1.7}
+.kf strong{color:#f1f5f9}
+.note{font-size:.75rem;color:#64748b;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px 16px;margin-top:20px;line-height:1.6}
+section{margin-bottom:28px}
+#loading{text-align:center;padding:60px;color:#64748b;font-size:1rem}
+</style>
+</head>
+<body>
+<div id="loading">Loading research data…</div>
+<div id="app" style="display:none">
+  <h1>HTF Confluence Filter Research</h1>
+  <p class="sub" id="sub-line"></p>
+
+  <div class="kf"><div class="kf-t">Key Finding</div>
+  <p><strong>30-min ≥60%</strong> is the best filter: <strong class="green" id="kf-wr"></strong> win rate on <span id="kf-n"></span> trades vs <span id="kf-base"></span>% baseline — at roughly half the trade frequency of the 1-hr setting. The 15-min candle is too noisy. 30-min ≥40% is the best volume/quality tradeoff.</p></div>
+
+  <div class="grid3">
+    <div class="card"><div class="ct">Baseline — No filter</div><div class="big gray" id="h-base-wr"></div><div class="msub" id="h-base-sub"></div></div>
+    <div class="card" style="border-color:#10b981"><div class="ct">30-min ≥40% <span class="badge badge-amber">Volume ★</span></div><div class="big green" id="h-vol-wr"></div><div class="msub" id="h-vol-sub"></div></div>
+    <div class="card" style="border-color:#f59e0b"><div class="ct">30-min ≥60% <span class="badge badge-amber">Quality ★</span></div><div class="big amber" id="h-qual-wr"></div><div class="msub" id="h-qual-sub"></div></div>
+  </div>
+
+  <section><h2>Charts</h2>
+  <div class="grid2">
+    <div class="chart-box"><canvas id="wrChart"></canvas></div>
+    <div class="chart-box"><canvas id="nChart"></canvas></div>
+  </div>
+  <div class="chart-box"><canvas id="pnlChart"></canvas></div>
+  </section>
+
+  <section><h2>Full Comparison Table</h2>
+  <div class="card" style="padding:0;overflow:hidden">
+  <table><thead><tr>
+    <th>Filter</th><th>Threshold</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>PnL</th><th>PnL/Signal</th><th>Skipped</th>
+  </tr></thead><tbody id="tbl"></tbody></table></div></section>
+
+  <div class="note"><strong>Methodology:</strong> Confluence = directional body/range ratio of the in-progress HTF candle at signal time (aggregated from 30-sec bars). Outcomes: forward-walk 30-sec OHLC, first bar to touch TP or SL wins/loses. Small sample — directional evidence only.</div>
+</div>
+
+<script>
+fetch('htf_research.json').then(r=>r.json()).then(D=>{
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='block';
+  const b=D.baseline, f=D.filters;
+  const vol=f['30min']['40'], qual=f['30min']['60'];
+
+  document.getElementById('sub-line').textContent=`MNQ · ${D.date_range} · ${D.resolved_signals} live signals resolved via 30-sec bar forward-walk · Generated ${D.generated}`;
+  document.getElementById('kf-wr').textContent=qual.wr.toFixed(1)+'%';
+  document.getElementById('kf-n').textContent=qual.n;
+  document.getElementById('kf-base').textContent=b.wr;
+  document.getElementById('h-base-wr').textContent=b.wr.toFixed(0)+'%';
+  document.getElementById('h-base-sub').textContent=`${b.n} signals · $${b.pnl.toLocaleString()}`;
+  document.getElementById('h-vol-wr').textContent=vol.wr.toFixed(0)+'%';
+  document.getElementById('h-vol-sub').innerHTML=`${vol.n} signals · <span class="green">$${vol.pnl.toLocaleString()}</span>`;
+  document.getElementById('h-qual-wr').textContent=qual.wr.toFixed(0)+'%';
+  document.getElementById('h-qual-sub').innerHTML=`${qual.n} signals · <span class="green">$${qual.pnl.toLocaleString()}</span>`;
+
+  const TFS=[['15min','15-min','#3b82f6'],['30min','30-min','#10b981'],['60min','1-hr','#f59e0b']];
+  const THRESH=D.thresholds;
+  const baseOpts={responsive:true,plugins:{legend:{labels:{color:'#94a3b8',font:{size:12}}},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8',borderColor:'#334155',borderWidth:1}},scales:{x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}},y:{ticks:{color:'#64748b'},grid:{color:'#334155'}}}};
+
+  function ds(metric){return TFS.map(([key,lbl,col])=>({label:lbl,borderColor:col,backgroundColor:col+'22',data:THRESH.map(t=>f[key][String(t)][metric]),tension:0.35,pointRadius:5,pointHoverRadius:8,borderWidth:2.5}));}
+  const labels=THRESH.map(t=>t+'%');
+
+  new Chart(document.getElementById('wrChart'),{type:'line',data:{labels,datasets:[...ds('wr'),{label:'Baseline '+b.wr+'%',data:Array(labels.length).fill(b.wr),borderColor:'#475569',borderDash:[5,4],borderWidth:1.5,pointRadius:0}]},options:{...baseOpts,plugins:{...baseOpts.plugins,title:{display:true,text:'Win Rate % by Threshold',color:'#cbd5e1',font:{size:13}}},scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,max:100,title:{display:true,text:'Win Rate %',color:'#64748b'}}}}});
+  new Chart(document.getElementById('nChart'),{type:'line',data:{labels,datasets:ds('n')},options:{...baseOpts,plugins:{...baseOpts.plugins,title:{display:true,text:'Signals Passing Filter',color:'#cbd5e1',font:{size:13}}},scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,title:{display:true,text:'Count',color:'#64748b'}}}}});
+
+  const pnlL=['Baseline',...TFS.flatMap(([key,lbl])=>['≥20%','≥40%','≥60%'].map(t=>lbl+' '+t))];
+  const pnlV=[b.pnl,...TFS.flatMap(([key])=>[f[key]['20'].pnl,f[key]['40'].pnl,f[key]['60'].pnl])];
+  const pnlC=['#47556999','#3b82f655','#3b82f688','#3b82f6','#10b98155','#10b98188','#10b981','#f59e0b55','#f59e0b88','#f59e0b'];
+  new Chart(document.getElementById('pnlChart'),{type:'bar',data:{labels:pnlL,datasets:[{label:'PnL ($)',data:pnlV,backgroundColor:pnlC,borderRadius:5}]},options:{...baseOpts,plugins:{...baseOpts.plugins,title:{display:true,text:'Total PnL by Filter Setting',color:'#cbd5e1',font:{size:13}},legend:{display:false}},scales:{...baseOpts.scales,y:{...baseOpts.scales.y,title:{display:true,text:'PnL ($)',color:'#64748b'}}}}});
+
+  const tbl=document.getElementById('tbl');
+  function pill(lbl){const cls={' 15-min':'blue','30-min':'green','1-hr':'amber'}[lbl]||'blue';return`<span class="pill pill-${cls}">${lbl}</span>`;}
+  function wrBar(wr){const col=wr>=50?'#10b981':wr>=35?'#f59e0b':'#ef4444';return`<span style="color:${col};font-weight:600">${wr.toFixed(1)}%</span><div class="wr-bg"><div class="wr-fill" style="width:${Math.min(wr,100).toFixed(0)}%;background:${col}"></div></div>`;}
+  const pc=v=>v>=0?'green':'red';
+  tbl.innerHTML=`<tr style="background:#ffffff06"><td><span class="pill" style="background:#1e293b;color:#64748b;border:1px solid #334155">Baseline</span></td><td class="gray">—</td><td>${b.n}</td><td class="green">${b.w}</td><td class="red">${b.l}</td><td>${wrBar(b.wr)}</td><td class="${pc(b.pnl)}">$${b.pnl.toLocaleString()}</td><td class="${pc(b.pnl_per)}">$${b.pnl_per.toFixed(2)}</td><td class="gray">—</td></tr>`;
+  TFS.forEach(([key,lbl])=>{[20,40,60].forEach(t=>{const r=f[key][String(t)];const best=(key==='30min'&&t===60);const bg=best?' style="background:#0f3620"':'';const star=best?' <span class="badge badge-amber">★</span>':'';tbl.innerHTML+=`<tr${bg}><td>${pill(lbl)}${star}</td><td>≥${t}%</td><td>${r.n}</td><td class="green">${r.w}</td><td class="red">${r.l}</td><td>${wrBar(r.wr)}</td><td class="${pc(r.pnl)}">$${r.pnl.toLocaleString()}</td><td class="${pc(r.pnl_per)}">$${r.pnl_per.toFixed(2)}</td><td class="gray">${r.skip}</td></tr>`;});});
+}).catch(e=>{document.getElementById('loading').textContent='Error loading data: '+e.message;});
+</script>
+</body>
+</html>
